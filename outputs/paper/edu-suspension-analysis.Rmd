@@ -1,0 +1,54 @@
+---
+title: "TBD"
+author: "Rachael Lam"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  bookdown::pdf_document2:
+subtitle: "TBD"
+abstract: "TBD"
+thanks: 'Code and data are available at: https://github.com/rachaellam/edu-suspension-analysis.git.'
+toc: no
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+
+library(here)
+library(devtools)
+library(tidyr)
+library(tidyverse)
+library(ggplot2)
+library(scales)
+
+```
+
+# Introduction
+
+Criminalizing youth
+
+# Data
+
+High school data includes schools who offer only grades 9-12. No schools are included that only offer partial grades (ex. 10-12)
+
+Excluded:
+Only using high school data (maybe include other analysis depending on length)
+Raw data had over 1800 columns, so I removed all columns that were not necessary to the analysis including what types of classes are offered (algebra, geography, science, etc.).
+Grouped all students, regardless of race, to sum all suspensions. This has some ethical issues. This could also change the analysis if race was included.
+Disabilities
+
+Part of the analysis:
+1. Number of days missed due to suspension (TOT_DAYSMISSED) - Created this variable by summing total days missed for females (TOT_DAYSMISSED_F) and total days missed for males (OT_DAYSMISSED_M). I chose this because it speaks to the severity of the suspension. More days missed means the suspensions were for a longer period of time.
+2. Salary expenditures for total personnel with and without federal funding (COST_PER_STUDENT_WFED/COST_PER_STUDENT_WOFED) - Created this variable by dividing the salary with the number of students to understand how much each school was spending per student. 
+3. Amount of non-personnel expenditures associated with activities (COST_PER_STUDENT_NPE_WFED) - cost per student creation.
+Might include variables that separate total personnel such as teachers, administration, support services, instructional aid)
+
+
+# Model
+
+Will be using multiple linear regression. Cannot use a diff in diff approach because there are not enough variables. Although school districts are available, they do not match records that I can find.
+
+# Results
+
+# Discussion
+
+# Conclusion
