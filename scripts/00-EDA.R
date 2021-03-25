@@ -1,5 +1,5 @@
 ### Preamble ###
-# Purpose: Test dataset for use
+# Purpose: EDA of Department of Education Data
 # Author: Rachael Lam
 # Date: March 10 2021
 # Contact: rachael.lam@mail.utoronto.ca
@@ -13,6 +13,9 @@
 # install.packages("tidyr")
 # install.packages("ggplot2")
 # install.packages("scales")
+# install.packages("performance")
+# install.packages("see")
+# install.packages("broom")
 
 library(here)
 library(devtools)
@@ -20,6 +23,9 @@ library(tidyr)
 library(tidyverse)
 library(ggplot2)
 library(scales)
+library(performance)
+library(see)
+library(broom)
 
 ### Load Dataset ###
 raw_data <- read.csv("inputs/data/CRDC-2015-16-School-Data.csv")
@@ -76,7 +82,7 @@ high <- data %>%
   select(-contains("SSSPORTS")) %>% # remove single sex sports
   select(-contains("SSTEAMS")) %>% # remove single sex teams
   select(-contains("SSPART")) %>% # remove single sex athletics participation
-  select(-contains("HB")) %>% # remove harrassment and bullying
+  select(-contains("HB")) %>% # remove harassment and bullying
   select(-contains("UG")) %>% # remove ungraded grade
   select(-contains("LEP")) %>% # remove english competancy
   select(-contains("IDEA")) %>% # remove disabilities
@@ -165,52 +171,51 @@ high_sum <- high %>%
          TOT_DISCWODIS_EXPWOE_M, TOT_DISCWODIS_ISS_F, TOT_DISCWODIS_ISS_M, TOT_DISCWODIS_MULTOOS_F, TOT_DISCWODIS_MULTOOS_M, TOT_DISCWODIS_REF_F, TOT_DISCWODIS_REF_M,
          TOT_DISCWODIS_SINGOOS_F, TOT_DISCWODIS_SINGOOS_M, TOT_DISCWODIS_TFRALT_F, TOT_DISCWODIS_TFRALT_M, TOT_ENR_M, TOT_ENR_F)
 
-# only focusing on suspensions
-disc_high <- high %>%
-  select(-contains("ABSENT")) %>% # absent from school
-  select(-contains("CORP")) %>% # corporal punishment
-  select(-contains("ARR")) %>% # arrests
-  select(-contains("EXPZT")) %>% # expulsions
-  select(-contains("REF")) %>% # referred to law enforcement
-  select(-contains("TFRALT")) %>% # transferred to alternative school for disciplinary reasons
-  select(-contains("GRADE")) %>% # we know that we're focusing on 9-12 so we are removing the columns
-  select(-contains("OFFENSE")) %>% # all offenses ie. battery, robbery, fights
-  select(-contains("PS")) %>% # all preschool columns
-  select(-contains("RET")) %>% # retention
-  select(-contains("STATUS")) %>% # we removed all schools that have an alternative status, don't need columns
-  select(-contains("CREDIT")) # credit recovery
+
+# split into republican states and democratic states from the 2016 election
+rep <- disc_high_sum %>%
+  filter(LEA_STATE_NAME == "ALABAMA" | LEA_STATE_NAME == "ALASKA" | LEA_STATE_NAME == "ARIZONA" | LEA_STATE_NAME == "ARKANSAS" | LEA_STATE_NAME == "FLORIDA"
+         | LEA_STATE_NAME == "GEORGIA" | LEA_STATE_NAME == "IDAHO" | LEA_STATE_NAME == "INDIANA" | LEA_STATE_NAME == "IOWA" | LEA_STATE_NAME == "KANSAS"
+         | LEA_STATE_NAME == "KENTUCKY" | LEA_STATE_NAME == "LOUISIANA" | LEA_STATE_NAME == "MICHIGAN" | LEA_STATE_NAME == "MISSISSIPPI"
+         | LEA_STATE_NAME == "MISSOURI" | LEA_STATE_NAME == "MONTANA" | LEA_STATE_NAME == "NEBRASKA" | LEA_STATE_NAME == "NORTH CAROLINA"
+         | LEA_STATE_NAME == "NORTH DAKOTA" | LEA_STATE_NAME == "OHIO" | LEA_STATE_NAME == "OKLAHOMA" | LEA_STATE_NAME == "PENNSYLVANIA"
+         | LEA_STATE_NAME == "SOUTH CAROLINA" | LEA_STATE_NAME == "SOUTH DAKOTA" | LEA_STATE_NAME == "TENNESSEE" | LEA_STATE_NAME == "TEXAS"
+         | LEA_STATE_NAME == "UTAH" | LEA_STATE_NAME == "WEST VIRGINIA" | LEA_STATE_NAME == "WISCONSIN" | LEA_STATE_NAME == "WYOMING")
+
+dem <- disc_high_sum %>%
+  filter(LEA_STATE_NAME == "CALIFORNIA" | LEA_STATE_NAME == "COLORADO" | LEA_STATE_NAME == "CONNECTICUT" | LEA_STATE_NAME == "DELAWARE"
+         | LEA_STATE_NAME == "DISTRICT OF COLUMBIA" | LEA_STATE_NAME == "HAWAII" | LEA_STATE_NAME == "ILLINOIS" | LEA_STATE_NAME == "IOWA"
+         | LEA_STATE_NAME == "MAINE" | LEA_STATE_NAME == "MARYLAND" | LEA_STATE_NAME == "MASSACHUSETTS" | LEA_STATE_NAME == "MINNESOTA"
+         | LEA_STATE_NAME == "NEVADA" | LEA_STATE_NAME == "NEW HAMPSHIRE" | LEA_STATE_NAME == "NEW JERSEY" | LEA_STATE_NAME == "NEW MEXICO"
+         | LEA_STATE_NAME == "NEW YORK" | LEA_STATE_NAME == "OREGON" | LEA_STATE_NAME == "RHODE ISLAND" | LEA_STATE_NAME == "VERMONT"
+         | LEA_STATE_NAME == "VIRGINIA" | LEA_STATE_NAME == "WASHINGTON")
+
+# split by funding distribution https://edlawcenter.org/research/making-the-grade-2020.html
+pro <- disc_high_sum %>%
+  filter(LEA_STATE_NAME == "ALASKA" | LEA_STATE_NAME == "UTAH" | LEA_STATE_NAME == "SOUTH DAKOTA" | LEA_STATE_NAME == "NEBRASKA" | LEA_STATE_NAME == "MINNESOTA"
+         | LEA_STATE_NAME == "WYOMING" | LEA_STATE_NAME == "COLORADO" | LEA_STATE_NAME == "NEW MEXICO" | LEA_STATE_NAME == "MONTANA" | LEA_STATE_NAME == "CALIFORNIA"
+         | LEA_STATE_NAME == "INDIANA" | LEA_STATE_NAME == "MARYLAND" | LEA_STATE_NAME == "OHIO" | LEA_STATE_NAME == "NEW YORK" | LEA_STATE_NAME == "WISCONSIN"
+         | LEA_STATE_NAME == "ARKANSAS")
+
+flat <- disc_high_sum %>%
+  filter(LEA_STATE_NAME == "NORTH CAROLINA" | LEA_STATE_NAME == "SOUTH CAROLINA" | LEA_STATE_NAME == "TENNESSEE" | LEA_STATE_NAME == "GEORGIA"
+         | LEA_STATE_NAME == "OKLAHOMA" | LEA_STATE_NAME == "DELAWARE" | LEA_STATE_NAME == "MASSACHUSETTS" | LEA_STATE_NAME == "ARIZONA"
+         | LEA_STATE_NAME == "KANSAS" | LEA_STATE_NAME == "VIRGINIA" | LEA_STATE_NAME == "MISSISSIPPI" | LEA_STATE_NAME == "NORTH DAKOTA"
+         | LEA_STATE_NAME == "NEW JERSEY" | LEA_STATE_NAME == "LOUISIANA" | LEA_STATE_NAME == "KENTUCKY" | LEA_STATE_NAME == "IOWA" | LEA_STATE_NAME == "IDAHO")
+
+reg <- disc_high_sum %>%
+  filter(LEA_STATE_NAME == "FLORIDA" | LEA_STATE_NAME == "TEXAS" | LEA_STATE_NAME == "WEST VIRGINIA" | LEA_STATE_NAME == "MICHIGAN" | LEA_STATE_NAME == "OREGON"
+         | LEA_STATE_NAME == "WASHINGTON" | LEA_STATE_NAME == "PENNSYLVANIA" | LEA_STATE_NAME == "CONNECTICUT" | LEA_STATE_NAME == "ALABAMA"
+         | LEA_STATE_NAME == "MAINE" | LEA_STATE_NAME == "RHODE ISLAND" | LEA_STATE_NAME == "MISSOURI" | LEA_STATE_NAME == "ILLINOIS" | LEA_STATE_NAME == "NEVADA"
+         | LEA_STATE_NAME == "NEW HAMPSHIRE")
 
 
-# totalling all students who have received suspensions 
-disc_high_sum <- disc_high %>%
-  filter_at(vars(SCH_SAL_TOTPERS_WOFED, SCH_SAL_TOTPERS_WFED, SCH_SAL_TEACH_WFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WFED, SCH_SAL_AID_WOFED, 
-                 SCH_SAL_SUP_WFED, SCH_SAL_SUP_WOFED, SCH_SAL_ADM_WFED, SCH_SAL_ADM_WOFED, SCH_NPE_WFED), all_vars(. > 0)) %>% # -9 and -5 is unreported
-  mutate(TOT_DAYSMISSED = select(., "TOT_DAYSMISSED_F", "TOT_DAYSMISSED_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_EXPWE = select(., "TOT_DISCWODIS_EXPWE_F", "TOT_DISCWODIS_EXPWE_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_EXPWOE = select(.,  "TOT_DISCWODIS_EXPWOE_F", "TOT_DISCWODIS_EXPWOE_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_ISS = select(., "TOT_DISCWODIS_ISS_F", "TOT_DISCWODIS_ISS_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_MULTOOS = select(., "TOT_DISCWODIS_MULTOOS_F", "TOT_DISCWODIS_MULTOOS_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_SINGOOS = select(., "TOT_DISCWODIS_SINGOOS_F", "TOT_DISCWODIS_SINGOOS_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_ENR = select(., "TOT_ENR_F", "TOT_ENR_M")  %>% rowSums(na.rm = TRUE)) %>%
-  transform(COST_PER_STUDENT_WOFED = round(SCH_SAL_TOTPERS_WOFED / TOT_ENR, digits = 2)) %>% # finding the cost per student
-  transform(COST_PER_STUDENT_WFED = round(SCH_SAL_TOTPERS_WFED / TOT_ENR, digits = 2)) %>%
-  transform(COST_PER_STUDENT_TEACH_WFED = round(SCH_SAL_TEACH_WFED / TOT_ENR, digits = 2)) %>%
-  transform(COST_PER_STUDENT_AID_WFED = round(SCH_SAL_AID_WFED / TOT_ENR, digits = 2)) %>%
-  transform(COST_PER_STUDENT_SUP_WFED = round(SCH_SAL_SUP_WFED / TOT_ENR, digits = 2)) %>%
-  transform(COST_PER_STUDENT_ADM_WFED = round(SCH_SAL_ADM_WFED / TOT_ENR, digits = 2)) %>%
-  transform(COST_PER_STUDENT_NPE_WFED = round(SCH_NPE_WFED / TOT_ENR, digits = 2)) %>%
-  select(LEA_STATE, LEA_STATE_NAME, LEAID, LEA_NAME, SCHID, SCH_NAME, SCH_NAME, COMBOKEY, TOT_ENR, TOT_DAYSMISSED, TOT_EXPWE, TOT_EXPWOE, TOT_ISS, TOT_MULTOOS, TOT_SINGOOS, SCH_SAL_TOTPERS_WFED,
-         SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WFED, SCH_SAL_SUP_WOFED, SCH_SAL_ADM_WFED, SCH_SAL_ADM_WOFED,
-         SCH_NPE_WFED, COST_PER_STUDENT_WOFED, COST_PER_STUDENT_WFED, COST_PER_STUDENT_TEACH_WFED, COST_PER_STUDENT_AID_WFED, COST_PER_STUDENT_SUP_WFED, COST_PER_STUDENT_ADM_WFED, COST_PER_STUDENT_NPE_WFED)
 
-disc_high_sum %>%
-  ggplot(aes(COST_PER_STUDENT_WFED, TOT_DAYSMISSED)) +
-  geom_point() +
-  scale_x_continuous(labels = comma) +
-  coord_cartesian(xlim = c(0, 25000)) # zoom into the 0-25000 dollar amount
 
-lmHigh = lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WFED, data = disc_high_sum)
-summary(lmHigh)
 
-sigma(lmHigh) / mean(disc_high_sum$TOT_DAYSMISSED)
+
+
+
+  
+
 

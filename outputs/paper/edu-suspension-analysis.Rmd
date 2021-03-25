@@ -26,6 +26,14 @@ library(scales)
 
 Criminalizing youth
 
+initial findings:
+there is some relationship between number of days missed due to suspensions and salary expenditures of all school personnel
+there is some relationship between in school suspensions and number and salary expenditures of all school personnel
+there is some relationship between number of days missed due to suspensions and salary of teachers but no relationship between days missed and salary of other personnel (aid, support services, administration)
+there is some relationship between number of in school suspensions and number of teachers. this is probably due to more teachers = more students = more suspensions
+there is no relationship between number of in school suspensions and number of teachers per student... odd
+looking at the 10 most populous states, half of them have a relationship between days missed and salary of all school personnel but the other half have no relationship. Broadening to the entire population, there is a strong relationship so there is something to explore there.
+
 # Data
 
 High school data includes schools who offer only grades 9-12. No schools are included that only offer partial grades (ex. 10-12)
@@ -38,10 +46,13 @@ Disabilities
 
 Part of the analysis:
 1. Number of days missed due to suspension (TOT_DAYSMISSED) - Created this variable by summing total days missed for females (TOT_DAYSMISSED_F) and total days missed for males (OT_DAYSMISSED_M). I chose this because it speaks to the severity of the suspension. More days missed means the suspensions were for a longer period of time.
-2. Salary expenditures for total personnel with and without federal funding (COST_PER_STUDENT_WFED/COST_PER_STUDENT_WOFED) - Created this variable by dividing the salary with the number of students to understand how much each school was spending per student. 
-3. Amount of non-personnel expenditures associated with activities (COST_PER_STUDENT_NPE_WFED) - cost per student creation.
+2. Salary expenditures for total personnel without federal funding (COST_PER_STUDENT_WOFED) - Created this variable by dividing the salary with the number of students to understand how much each school was spending per student. 
+3. Amount of non-personnel expenditures associated with activities (COST_PER_STUDENT_NPE_WOFED) - cost per student creation.
 Might include variables that separate total personnel such as teachers, administration, support services, instructional aid)
+4. all expenditures are WOFED (without federal funding) to focus on state expenditures rather than federal intervention
 
+DC and Hawaii are not included because there are no schools that only offer 9-12. Schools either offer more grades, fewer grades or ungraded.
+Focus on schools that report their data, excluding ones that do not which could prove problematic. What are they type of schools that are not reporting stats?
 
 # Model
 
@@ -50,5 +61,8 @@ Will be using multiple linear regression. Cannot use a diff in diff approach bec
 # Results
 
 # Discussion
+
+speak to causality, what you would do, and why you can't do it
+Not able to do diff in diff so there could be some factors causing suspensions rates that are not discussed in the paper. States could vary drastically, especially in political values, thus outlooks on criminality, punishment and tolerance.
 
 # Conclusion
