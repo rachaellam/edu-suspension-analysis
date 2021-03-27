@@ -66,3 +66,21 @@ speak to causality, what you would do, and why you can't do it
 Not able to do diff in diff so there could be some factors causing suspensions rates that are not discussed in the paper. States could vary drastically, especially in political values, thus outlooks on criminality, punishment and tolerance.
 
 # Conclusion
+
+# Lit review discussion points
+Rebecca Hinze-Pifera and Lauren Sartain: https://doi.org/10.1080/0161956X.2018.1435051
+- difficult to identify causal impact because of the many factors that go into deciding student suspension including personal biases
+- data quality problems due to schools under reporting
+- suspensions cause increase fear of crime, teacher attrition, anger, disconnect from school, impacts of missing school
+- negative impacts for not only students who are suspended but students who attend schools with high suspension rates
+- suspension inequality (race, gender, LGBTQ, special needs, socioeconomic factors)
+
+Jason Jabbari, Odis Johnson Jr: https://doi-org.myaccess.library.utoronto.ca/10.1177%2F0042085920902256
+- zero tolerance policies 1990s
+- exclusionary practices
+- urban communities with heightened police surveillance
+- school to prison pipeline
+- study that found students who attend high-suspension schools are negatively affected, even if they do not themselves receive a suspension.
+- mention a study that found students who recieved ISS suffered a lower GPA and higher dropout rates even though ISS has been seen as a less puantive form of punishment.
+
+
