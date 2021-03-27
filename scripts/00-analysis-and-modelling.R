@@ -142,8 +142,14 @@ disc_high_sum %>%
   scale_x_continuous(labels = comma)
 
 # modelling
-lmper <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = disc_high_sum)
+lmper <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED + COST_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 summary(lmper)
+
+lmdays <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED + COST_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+summary(lmdays)
+
+lmtype <- lm(ISS_PER_100 ~ COST_PER_STUDENT_TEACH_WOFED + COST_PER_STUDENT_AID_WOFED + COST_PER_STUDENT_SUP_WOFED + COST_PER_STUDENT_ADM_WOFED, data = disc_high_sum)
+summary(lmtype)
 
 # add a few single states to see if it supports your overall population results
 # 10 most populous states
@@ -154,7 +160,7 @@ ny <- disc_high_sum %>%
 lmny <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = ny)
 summary(lmny)
 
-lmnyiss <- lm(TOT_ISS ~ COST_PER_STUDENT_WOFED, data = ny)
+lmnyiss <- lm(ISS_PER_100~ COST_PER_STUDENT_WOFED, data = ny)
 summary(lmnyiss)
 
 # pennsylvania (reg)
@@ -164,7 +170,7 @@ pa <- disc_high_sum %>%
 lmpa <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = pa)
 summary(lmpa)
 
-lmpaiss <- lm(TOT_ISS ~ COST_PER_STUDENT_WOFED, data = pa)
+lmpaiss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = pa)
 summary(lmpaiss)
 
 # illinois (reg)
@@ -174,7 +180,7 @@ il <- disc_high_sum %>%
 lmil <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = il)
 summary(lmil)
 
-lmiliss <- lm(TOT_ISS ~ COST_PER_STUDENT_WOFED, data = il)
+lmiliss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = il)
 summary(lmiliss)
 
 # ohio (pro)
@@ -184,7 +190,7 @@ oh <- disc_high_sum %>%
 lmoh <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = oh)
 summary(lmoh)
 
-lmohiss <- lm(TOT_ISS ~ COST_PER_STUDENT_WOFED, data = oh)
+lmohiss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = oh)
 summary(lmohiss)
 
 # texas (reg)
@@ -194,7 +200,7 @@ tx <- disc_high_sum %>%
 lmtx <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = tx)
 summary(lmtx)
 
-lmtxiss <- lm(TOT_ISS ~ COST_PER_STUDENT_WOFED, data = tx)
+lmtxiss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = tx)
 summary(lmtxiss)
 
 # florida (reg)
@@ -204,7 +210,7 @@ fl <- disc_high_sum %>%
 lmfl <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = fl)
 summary(lmfl)
 
-lmfliss <- lm(TOT_ISS ~ COST_PER_STUDENT_WOFED, data = fl)
+lmfliss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = fl)
 summary(lmfliss)
 
 # california (pro)
@@ -214,7 +220,7 @@ ca <- disc_high_sum %>%
 lmca <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = ca)
 summary(lmca)
 
-lmcaiss <- lm(TOT_ISS ~ COST_PER_STUDENT_WOFED, data = ca)
+lmcaiss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = ca)
 summary(lmcaiss)
 
 # georgia
@@ -224,6 +230,9 @@ ga <- disc_high_sum %>%
 lmga <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = ga)
 summary(lmga)
 
+lmgaiss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = ga)
+summary(lmgaiss)
+
 # north carolina
 nc <- disc_high_sum %>%
   filter(LEA_STATE_NAME == "NORTH CAROLINA")
@@ -231,9 +240,15 @@ nc <- disc_high_sum %>%
 lmnc <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = nc)
 summary(lmnc)
 
+lmnciss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = nc)
+summary(lmnciss)
+
 # michigan
 mi <- disc_high_sum %>%
   filter(LEA_STATE_NAME == "MICHIGAN")
 
 lmmi <- lm(TOT_DAYSMISSED ~ COST_PER_STUDENT_WOFED, data = mi)
 summary(lmmi)
+
+lmmiiss <- lm(ISS_PER_100 ~ COST_PER_STUDENT_WOFED, data = mi)
+summary(lmmiiss)
