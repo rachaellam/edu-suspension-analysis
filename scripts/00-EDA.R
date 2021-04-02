@@ -171,6 +171,47 @@ high_sum <- high %>%
          TOT_DISCWODIS_EXPWOE_M, TOT_DISCWODIS_ISS_F, TOT_DISCWODIS_ISS_M, TOT_DISCWODIS_MULTOOS_F, TOT_DISCWODIS_MULTOOS_M, TOT_DISCWODIS_REF_F, TOT_DISCWODIS_REF_M,
          TOT_DISCWODIS_SINGOOS_F, TOT_DISCWODIS_SINGOOS_M, TOT_DISCWODIS_TFRALT_F, TOT_DISCWODIS_TFRALT_M, TOT_ENR_M, TOT_ENR_F)
 
+# only focusing on suspensions
+disc_high <- high %>%
+  select(-contains("ABSENT")) %>% # absent from school
+  select(-contains("CORP")) %>% # corporal punishment
+  select(-contains("ARR")) %>% # arrests
+  select(-contains("EXPZT")) %>% # expulsions
+  select(-contains("REF")) %>% # referred to law enforcement
+  select(-contains("TFRALT")) %>% # transferred to alternative school for disciplinary reasons
+  select(-contains("GRADE")) %>% # we know that we're focusing on 9-12 so we are removing the columns
+  select(-contains("OFFENSE")) %>% # all offenses ie. battery, robbery, fights
+  select(-contains("PS")) %>% # all preschool columns
+  select(-contains("RET")) %>% # retention
+  select(-contains("STATUS")) %>% # we removed all schools that have an alternative status, don't need columns
+  select(-contains("CREDIT")) # credit recovery
+
+# totalling all students who have received suspensions 
+disc_high_sum <- disc_high %>%
+  filter_at(vars(SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WOFED, SCH_SAL_ADM_WOFED, SCH_FTE_TEACH_WOFED), all_vars(. > 0)) %>% # -9 and -5 is unreported
+  mutate(TOT_DAYSMISSED = select(., "TOT_DAYSMISSED_F", "TOT_DAYSMISSED_M")  %>% rowSums(na.rm = TRUE)) %>%
+  mutate(TOT_EXPWE = select(., "TOT_DISCWODIS_EXPWE_F", "TOT_DISCWODIS_EXPWE_M")  %>% rowSums(na.rm = TRUE)) %>%
+  mutate(TOT_EXPWOE = select(.,  "TOT_DISCWODIS_EXPWOE_F", "TOT_DISCWODIS_EXPWOE_M")  %>% rowSums(na.rm = TRUE)) %>%
+  mutate(TOT_ISS = select(., "TOT_DISCWODIS_ISS_F", "TOT_DISCWODIS_ISS_M")  %>% rowSums(na.rm = TRUE)) %>%
+  mutate(TOT_MULTOOS = select(., "TOT_DISCWODIS_MULTOOS_F", "TOT_DISCWODIS_MULTOOS_M")  %>% rowSums(na.rm = TRUE)) %>%
+  mutate(TOT_SINGOOS = select(., "TOT_DISCWODIS_SINGOOS_F", "TOT_DISCWODIS_SINGOOS_M")  %>% rowSums(na.rm = TRUE)) %>%
+  mutate(TOT_ENR = select(., "TOT_ENR_F", "TOT_ENR_M")  %>% rowSums(na.rm = TRUE)) %>%
+  transform(SPEND_PER_STUDENT_WOFED = round(SCH_SAL_TOTPERS_WOFED / TOT_ENR, digits = 2)) %>% # finding the cost per student
+  transform(SPEND_PER_STUDENT_TEACH_WOFED = round(SCH_SAL_TEACH_WOFED / TOT_ENR, digits = 2)) %>%
+  transform(SPEND_PER_STUDENT_AID_WOFED = round(SCH_SAL_AID_WOFED / TOT_ENR, digits = 2)) %>%
+  transform(SPEND_PER_STUDENT_SUP_WOFED = round(SCH_SAL_SUP_WOFED / TOT_ENR, digits = 2)) %>%
+  transform(SPEND_PER_STUDENT_ADM_WOFED = round(SCH_SAL_ADM_WOFED / TOT_ENR, digits = 2)) %>%
+  transform(SPEND_PER_STUDENT_NPE_WOFED = round(SCH_NPE_WOFED / TOT_ENR, digits = 2)) %>%
+  transform(TEACH_PER_STUDENT = round(TOT_ENR / SCH_FTE_TEACH_WOFED, digits = 2)) %>%
+  transform(DAYSMISSED_PER_100 = round(((TOT_DAYSMISSED / TOT_ENR) * 100), digits = 2)) %>%
+  transform(ISS_PER_100 = round(((TOT_ISS / TOT_ENR) * 100), digits = 2)) %>%
+  transform(MULTOOS_PER_100 = round(((TOT_MULTOOS / TOT_ENR) * 100), digits = 2)) %>%
+  transform(SINGOOS_PER_100 = round(((TOT_SINGOOS / TOT_ENR) * 100), digits = 2)) %>%
+  select(LEA_STATE, LEA_STATE_NAME, LEAID, LEA_NAME, SCHID, SCH_NAME, SCH_NAME, COMBOKEY, TOT_ENR, TOT_DAYSMISSED, DAYSMISSED_PER_100, TOT_EXPWE, TOT_EXPWOE, TOT_ISS, 
+         ISS_PER_100, TOT_MULTOOS, MULTOOS_PER_100, TOT_SINGOOS, SINGOOS_PER_100, SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WOFED, 
+         SCH_SAL_ADM_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, 
+         SPEND_PER_STUDENT_NPE_WOFED, SCH_FTE_TEACH_WOFED, TEACH_PER_STUDENT) %>%
+  filter(SPEND_PER_STUDENT_SUP_WOFED < 1000000) # removing outlier of 2346486.911, leading me to believe that it was incorrect reporting
 
 # split into republican states and democratic states from the 2016 election
 rep <- disc_high_sum %>%
