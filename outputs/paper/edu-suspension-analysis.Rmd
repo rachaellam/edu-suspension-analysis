@@ -7,7 +7,7 @@ output:
 subtitle: "TBD"
 abstract: "TBD"
 thanks: 'Code and data are available at: https://github.com/rachaellam/edu-suspension-analysis.git.'
-toc: no
+toc: yes
 bibliography: references.bib
 ---
 
@@ -23,6 +23,8 @@ library(scales)
 ```
 
 # Introduction
+
+
 
 Criminalizing youth
 
@@ -40,7 +42,7 @@ High school data includes schools who offer only grades 9-12. No schools are inc
 
 Excluded:
 Only using high school data (maybe include other analysis depending on length)
-Raw data had over 1800 columns, so I removed all columns that were not necessary to the analysis including what types of classes are offered (algebra, geography, science, etc.).
+Raw data had over 1800 columns, so I removed all columns that were not necessary to this analysis including what types of classes are offered (algebra, geography, science, etc.).
 Grouped all students, regardless of race, to sum all suspensions. This has some ethical issues. This could also change the analysis if race was included.
 Disabilities
 
@@ -53,12 +55,17 @@ Might include variables that separate total personnel such as teachers, administ
 
 DC and Hawaii are not included because there are no schools that only offer 9-12. Schools either offer more grades, fewer grades or ungraded.
 Focus on schools that report their data, excluding ones that do not which could prove problematic. What are they type of schools that are not reporting stats?
+Self reporting raises the question of accurate reporting
 
 # Model
 
 Will be using multiple linear regression. Cannot use a diff in diff approach because there are not enough variables. Although school districts are available, they do not match records that I can find.
 
 # Results
+
+The question here is if an increase in spend per student is associated with a decrease in in schools suspensions or the severity of school suspensions (number of days missed). Although the model suggests that there is some relationship, it is not a representation of a causal relationship. There are many factors that could lead to high suspension rates in schools. Studies have been done that determine high-suspending schools are usually schools from in low-income communities and have a higher population of minority students. 
+
+Funding of schools relies on the majority of state and local funding. Local funding is collected from property taxes and other taxes such as sales and income. This automatically leads to a discrepancy as low-income communities collect less property tax (cheaper housing) and less sales and income tax (less income = less spending). Very few states attempt to equalize school funding, and even in states that do, there is still a large discrepancy with the amount of resources schools receive.
 
 # Discussion
 
@@ -81,6 +88,26 @@ Jason Jabbari, Odis Johnson Jr: https://doi-org.myaccess.library.utoronto.ca/10.
 - urban communities with heightened police surveillance
 - school to prison pipeline
 - study that found students who attend high-suspension schools are negatively affected, even if they do not themselves receive a suspension.
-- mention a study that found students who recieved ISS suffered a lower GPA and higher dropout rates even though ISS has been seen as a less puantive form of punishment.
+- mention a study that found students who received ISS suffered a lower GPA and higher dropout rates even though ISS has been seen as a less punitive form of punishment.
+
+Talisha Lee, Dewey Cornell, Anne Gregory, and Xitao Fan: doi:10.1353/etc.2011.0014
+- references studies that have been done that discuss the characteristics of a school with drop out rates
+- schools wit a higher percentage of low income students have higher drop out rates
+- higher rate of students from low socioeconomic backgrounds and a greater percentage of minority students were associated with high rates of school suspensions
+- schools with majority white students had more financial resources than schools with high percentage of minority students
+- drop out rates for rural areas tend to be lower than urban areas
+- reliant on schools to report drop out rates/retention rates but doesn't account for student mobility/declining school populations
+
+E. Christine Baker-Smith: https://doi.org/10.1080/0161956X.2018.1435043
+- exclusionary discipline related to lower levels of educational attainment, involvement in the criminal justice system, poor labour market outcomes
+- gun free schools act (1994) required any state "receiving federal funds to have a state law in effect requiring local educational agencies to expel, for at least one year, any student who is determined to have brought a weapon to school"
+- this act allowed schools to adopt harsher exclusionary practices against violent offenses, but it also brough an increased use of out of school suspensions for non-violent offences such as vulgar language, dress code violations, tardiness, or generic insubordination. 
+- zero tolerance policies
+- a randomized experiment found that teachers were more likely to punish a student who committed a second offense if they were black
+
+
+
+
+
 
 
