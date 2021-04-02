@@ -18,6 +18,8 @@
 # install.packages("broom")
 # install.packages("reshape2")
 # install.packages("knitr)
+# install.packages("palmerpenguins")
+# install.packages("patchwork")
 
 library(here)
 library(devtools)
@@ -30,6 +32,8 @@ library(see)
 library(broom)
 library(reshape2)
 library(knitr)
+library(palmerpenguins)
+library(patchwork)
 
 ### Load Dataset ###
 raw_data <- read.csv("inputs/data/CRDC-2015-16-School-Data.csv")
@@ -115,51 +119,36 @@ disc_high_sum <- disc_high %>%
   filter(SPEND_PER_STUDENT_SUP_WOFED < 1000000) # removing outlier of 2346486.911, leading me to believe that it was incorrect reporting
 
 # initial graphing
-disc_high_sum %>%
-  ggplot(aes(SPEND_PER_STUDENT_WOFED, TOT_DAYSMISSED)) +
-  geom_point() +
-  scale_x_continuous(labels = comma) +
-  coord_cartesian(xlim = c(0, 25000)) + # zoom into the 0-25000 dollar amount
-  theme_minimal()
 
-disc_high_sum %>%
-  ggplot(aes(SPEND_PER_STUDENT_TEACH_WOFED, TOT_DAYSMISSED)) +
-  geom_point() +
-  scale_x_continuous(labels = comma) +
-  coord_cartesian(xlim = c(0, 25000)) +
-  theme_minimal()
-
-disc_high_sum %>%
-  ggplot(aes(SPEND_PER_STUDENT_AID_WOFED, TOT_DAYSMISSED)) +
-  geom_point() +
-  scale_x_continuous(labels = comma) +
-  coord_cartesian(xlim = c(0, 25000)) +
-  theme_minimal()
-
-disc_high_sum %>%
+issplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
   scale_x_continuous(labels = comma) +
   theme_minimal()
 
-disc_high_sum %>%
-  ggplot(aes(SPEND_PER_STUDENT_WOFED, MULTOOS_PER_100)) +
+issplotzoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000))
+
+issplot + issplotzoom
+
+daysmissedplot <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
   geom_point() +
   scale_x_continuous(labels = comma) +
   theme_minimal()
 
-disc_high_sum %>%
-  ggplot(aes(SPEND_PER_STUDENT_WOFED, SINGOOS_PER_100)) +
-  geom_point() +
-  scale_x_continuous(labels = comma) +
-  theme_minimal()
-
-disc_high_sum %>%
+daysmissedplotzoom <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
   geom_point() +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000))
+
+daysmissedplot + daysmissedplotzoom
 
 # modelling
 lmper <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
