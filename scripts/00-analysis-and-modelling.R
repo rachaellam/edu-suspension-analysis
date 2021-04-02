@@ -122,16 +122,22 @@ disc_high_sum <- disc_high %>%
 
 issplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
-  geom_point() +
+  geom_point(color = "#ce85fa") +
   scale_x_continuous(labels = comma) +
-  theme_minimal()
+  theme_minimal() +
+  labs(x = "Spend per student without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-250,000")
 
 issplotzoom <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
-  geom_point() +
+  geom_point(color = "#0595e5") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
-  coord_cartesian(xlim = c(0, 50000))
+  coord_cartesian(xlim = c(0, 50000))+
+  labs(x = "Spend per student without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-50,000")
 
 issplot + issplotzoom
 
@@ -139,14 +145,20 @@ daysmissedplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
   geom_point() +
   scale_x_continuous(labels = comma) +
-  theme_minimal()
+  theme_minimal() +
+  labs(x = "Spend per student without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-250,000")
 
 daysmissedplotzoom <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
   geom_point() +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
-  coord_cartesian(xlim = c(0, 50000))
+  coord_cartesian(xlim = c(0, 50000)) +
+  labs(x = "Spend per student without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-250,000")
 
 daysmissedplot + daysmissedplotzoom
 
