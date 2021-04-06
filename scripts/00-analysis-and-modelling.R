@@ -121,7 +121,7 @@ disc_high_sum <- disc_high %>%
 
 issplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
-  geom_point(color = "#ce85fa") +
+  geom_point() +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   labs(x = "Spend per student without federal funding",
@@ -130,7 +130,7 @@ issplot <- disc_high_sum %>%
 
 issplotzoom <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
-  geom_point(color = "#0595e5") +
+  geom_point() +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000))+
@@ -139,6 +139,27 @@ issplotzoom <- disc_high_sum %>%
        title = "In School Suspensions x Spend $0-50,000")
 
 issplot + issplotzoom
+
+issnpe <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-1,000,000")
+
+issnpezoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 10000)) +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-10,000")
+  
+issnpe + issnpezoom
 
 daysmissedplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
@@ -161,8 +182,29 @@ daysmissedplotzoom <- disc_high_sum %>%
 
 daysmissedplot + daysmissedplotzoom
 
+daysnpe <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-1,000,000")
+
+daysnpezoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000)) +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-50,000")
+
+daysnpe + daysnpezoom
+
 # modelling
-lmper <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 summary(lmper)
 
 lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
