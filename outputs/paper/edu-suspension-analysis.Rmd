@@ -28,7 +28,7 @@ bibliography: references.bib
 # install.packages("knitr)
 # install.packages("palmerpenguins")
 # install.packages("patchwork")
-install.packages("huxtable")
+# install.packages("huxtable")
 
 library(here)
 library(devtools)
@@ -167,9 +167,11 @@ The model was run on four independent variables to explore if there is an associ
 
 ## ISS and OOS Models
 
-The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), a one dollar increase in spend per student on personnel is associated with a -0.00005 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is an extremely small increase. Interestingly, a one dollar increase in spend per student on non-personnel is associated with a 0.00001 increase in instances of ISS. 
+The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), a one dollar increase in spend per student on personnel is associated with a -0.00005 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Interestingly, a one dollar increase in spend per student on non-personnel is associated with a 0.00001 increase in instances of ISS. 
 
-Both the second and third model reveals no association between instances in single OOS and multiple OOS, respectively, and spend per student on personnel ($X_{1}$) and non-personnel ($X_{2}$). Finally, model four displays some association between number of days missed due to OOS and spend per student on personnel, but no association with spend per student on non-personnel. These results are contradictory, as I would assume if we were to see an association between days missed due to OOS and spend, we would also see some sort of association between the number of single and multiple OOS. An increase in OOS should correspondingly lead to an increase in days missed.
+Both the second and third model reveals no association between instances in single OOS and multiple OOS, respectively, and spend per student on personnel ($X_{1}$) and non-personnel ($X_{2}$). These models only explain that the data is not unusual under this model, rather than proof of a decisive causal relationship. Finally, model four displays some association between number of days missed due to OOS and spend per student on personnel, but no association with spend per student on non-personnel. These results are contradictory, as I would assume if we were to see an association between days missed due to OOS and spend, we would also see some sort of association between the number of single and multiple OOS. An increase in OOS should correspondingly lead to an increase in days missed. 
+
+Unfortunately, in all models, the residual standard percentage error is well over 100%, signifying a poor model fit for the data. As a result, the model leads to inconclusive results and it is indeterminable whether or not school spend has any affect on the number of ISS and OSS with the data provided. 
 
 ```{r lmiss, echo=FALSE, warning=FALSE, message = FALSE}
 
@@ -178,7 +180,7 @@ lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NP
 lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 
-huxreg("ISS" = lmiss, "SINGOOS" = lmsingoos, "MULTOOS" = lmmultoos, "DAYS MISSED" = lmdays, number_format = 5)
+huxreg("ISS" = lmiss, "SINGOOS" = lmsingoos, "MULTOOS" = lmmultoos, "DAYS MISSED" = lmdays, number_format = 5, ci_level = .95, error_format = "({conf.low} -- {conf.high})", bold_signif = 0.05)
 
 ```
 
