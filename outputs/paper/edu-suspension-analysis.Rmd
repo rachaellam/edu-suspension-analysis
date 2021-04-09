@@ -2,6 +2,9 @@
 title: "TBD"
 author: "Rachael Lam"
 date: "`r format(Sys.time(), '%d %B %Y')`"
+header-includes:
+  - \usepackage{float}
+  - \floatplacement{figure}{H}  #make every figure with caption = h, this was the fix
 output:
   bookdown::pdf_document2:
 subtitle: "TBD"
@@ -25,6 +28,7 @@ bibliography: references.bib
 # install.packages("knitr)
 # install.packages("palmerpenguins")
 # install.packages("patchwork")
+install.packages("huxtable")
 
 library(here)
 library(devtools)
@@ -36,40 +40,32 @@ library(reshape2)
 library(knitr)
 library(palmerpenguins)
 library(patchwork)
+library(huxtable)
 
 ```
 
 \pagebreak
 # Introduction
 
-Zero tolerance policies that began as a mechanism to lower crime rates percolated into school policies and practices. In 1994, the Gun Free Schools Act compelled states who received federal funding to pass a state law that required local educational agencies to expel any student that was discovered to have brought a weapon to school. Although this act was intended to reduce violent crimes, it instead allowed schools to increase the use of out of school suspensions (OSS) for non-violent offenses such as "vulgar language, dress code violations, tardiness, or generic insubordination" [@baker-smith]. The negative consequences of these exclusionary practices, such as OSS and in school suspensions (ISS), have been well documented in numerous studies. Students who encounter disciplinary action are more likely to have lower academic achievements and higher involvement in the criminal justice system [@baker-smith]. One study found that instances of delinquency or crime only occurred after an OSS, validating the existence of the school-to-prison pipeline. Additionally, while ISS are seen as a less punitive form of punishment, students who received ISS had lower GPAs and higher dropout rates [@jabbari]. These negative repercussions do not only affect students who directly receive disciplinary sentences but also indirectly impact students who attend high-suspension rate schools [@hinze-pifera]. Suspensions can lead to an increase in fear of crime and teacher attrition [@hinze-pifera], which can all negatively affect the performance of students and staff.
+Zero tolerance policies that began as a mechanism to lower crime rates percolated into school policies and practices. In 1994, the Gun Free Schools Act compelled states who received federal funding to pass a state law that required local educational agencies to expel any student that was discovered to have brought a weapon to school. Although this act was intended to reduce violent crimes, it instead allowed schools to increase the use of out of school suspensions (OOS) for non-violent offenses such as "vulgar language, dress code violations, tardiness, or generic insubordination" [@baker-smith]. The negative consequences of these exclusionary practices, such as OOS and in school suspensions (ISS), have been well documented in numerous studies. Students who encounter disciplinary action are more likely to have lower academic achievements and higher involvement in the criminal justice system [@baker-smith]. One study found that instances of delinquency or crime only occurred after an OOS, validating the existence of the school-to-prison pipeline. Additionally, while ISS are seen as a less punitive form of punishment, students who received ISS had lower GPAs and higher dropout rates [@jabbari]. These negative repercussions do not only affect students who directly receive disciplinary sentences but also indirectly impact students who attend high-suspension rate schools [@hinze-pifera]. Suspensions can lead to an increase in fear of crime and teacher attrition [@hinze-pifera], which can all negatively affect the performance of students and staff.
 
-Although OSS and ISS lead to a substantial number of disadvantageous impacts for all students, they disproportionately affect students of colour. Racial disparities in exclusionary punishments begin as early as preschool where black students experience more severe and frequent punishments [@skiba]. Black students are 3.5 times more likely to receive OSS than white students [@skiba] and in one randomized experiment, results indicated that teachers were more likely to punish a student who committed a second offense if they were black [@baker-smith]. This disciplinary inequality affects all students of colour, as Indigenous and Lantinx students share similar experiences. Race, gender, sexual orientation and disability all increase a student's chance of being subject to exclusionary practices [@skiba].
+Although OOS and ISS lead to a substantial number of disadvantageous impacts for all students, they disproportionately affect students of colour. Racial disparities in exclusionary punishments begin as early as preschool where black students experience more severe and frequent punishments [@skiba]. Black students are 3.5 times more likely to receive OOS than white students [@skiba] and in one randomized experiment, results indicated that teachers were more likely to punish a student who committed a second offense if they were black [@baker-smith]. This disciplinary inequality affects all students of colour, as Indigenous and Lantinx students share similar experiences. Race, gender, sexual orientation and disability all increase a student's chance of being subject to exclusionary practices [@skiba].
 
-Socioeconomic circumstances also play a crucial role in determining OSS and ISS rates. It was found that schools with a larger percentage of students from low socioeconomic backgrounds were associated with high rates of school suspensions [@lee]. Additionally, schools with majority white students had more financial resources than schools with majority of students of colour [@lee]. Due to the significant function of wealth in disciplinary action, it is necessary to further explore this relationship. In this paper, I used data from the Civil Rights Data Collection (CRDC) for the 2015-2016 school year to investigate the connection between school expenditures and suspension rates. After a discussion of the data and the model used, I find that, while there is an association between teacher salary and non-personnel expenditures and ISS rates, there is no association between non-personnel expenditures and number of days missed due to OSS. Additionally, the results are obscured when running the model on the ten most populous states. Unfortunately, causality cannot be found with the available data, but I will discuss what can be done to address causality with the appropriate data. Finally, I will end with a discussion on what can be done to lower OSS and ISS rates and how that will positively affect all students by drawing on existing literature. 
+Socioeconomic circumstances also play a crucial role in determining OOS and ISS rates. It was found that schools with a larger percentage of students from low socioeconomic backgrounds were associated with high rates of school suspensions [@lee]. Additionally, schools with majority white students had more financial resources than schools with majority of students of colour [@lee]. Due to the significant function of wealth in disciplinary action, it is necessary to further explore this relationship. In this paper, I used data from the Civil Rights Data Collection (CRDC) for the 2015-2016 school year to investigate the connection between school expenditures and suspension rates. After a discussion of the data and the model used, I find that, while there is an association between teacher salary and non-personnel expenditures and ISS rates, there is no association between non-personnel expenditures and number of days missed due to OOS. Additionally, the results are obscured when running the model on the ten most populous states. Unfortunately, causality cannot be found with the available data, but I will discuss what can be done to address causality with the appropriate data. Finally, I will end with a discussion on what can be done to lower OOS and ISS rates and how that will positively affect all students by drawing on existing literature. 
 
 # Data
 
-To complete the analysis on school expenditures and disciplinary punishment, I manipulated public school data from the 2015-2016 school year [@data]. These data are collected from the Civil Rights Data Collection (CRDC) for use by the U.S. Department of Education and other policy and research agencies. The raw data included 96,360 schools and 1,836 school attributes including school name, type, offered grades, population segmented by race and gender and financial expenditures. Using `R` [@citeR] 
+To attempt an analysis on school expenditures and disciplinary punishment, I manipulated public school data from the 2015-2016 school year [@data]. These data are collected by the Civil Rights Data Collection (CRDC) for use by the U.S. Department of Education and other policy and research agencies. The dataset was gathered in 2017 and last updated on September 28, 2018. The raw data includes 96,360 schools and 1,836 school attributes including school name, location and type; grades offered between preschool and grade 12; population of the school segmented by race and gender; type of classes and sports available; total instances of bullying, absenses, offenses, suspension and expulsions; special education and gifted and talented programs; and financial expenditures of personnel and non-personnel. Using `R` [@citeR], `tidyverse` [@tidyverse], `tidyr` [@tidyr], `devtools` [@devtools] and `dplyr` [@dplyr], I cleaned and extracted the necessary data to complete an exploritory analysis and modelling.
 
-High school data includes schools who offer only grades 9-12. No schools are included that only offer partial grades (ex. 10-12)
+To begin, I removed any school that was labelled alternative, charter, magnet, special education, or juvenile justice facility as I concentrated on schools that were publicly funded and adhered to the same rules and regulations. I then filtered schools that only offer grades 9-12, excluded schools that offer partial grades (ex. grades 10-12) and eliminated schools that offer preschool to grade 8 in order to limit the scope and examine similar schools. The analysis would be unbalanced if schools that only offer two grades were being compared to schools that offer four grades. Unfortunately, Hawaii and the District of Columbia were not included in the dataset after filtering by grade because there are no schools that only offer grades 9-12. In these states, schools either offer more grades, fewer grades or are ungraded, according to the dataset. Additionally, I removed columns that focused on special education and conducted the analysis without racial attributes, although this could be another area of analysis in the future especially as it is well documented that race and disabilities have an adverse affect on suspension rates. Finally, I removed any attributes regarding classes, sports, absences, offenses and bullying.
 
-Excluded:
-Only using high school data (maybe include other analysis depending on length)
-Raw data had over 1800 columns, so I removed all columns that were not necessary to this analysis including what types of classes are offered (algebra, geography, science, etc.).
-Grouped all students, regardless of race, to sum all suspensions. This has some ethical issues. This could also change the analysis if race was included.
-Disabilities
+Before adding calculations of the data, I removed any schools that did not report their financial records. Schools that reported -5 signified that there were missing values but also an action plan for providing the necessary data for the subsequent school year. I then began combining columns to produce new variables that sum the number of ISS and OOS as number of enrollment and suspensions were categorized by gender. Additionally, I calculated new variables that would yield an standardizing affect on schools. For example, schools that have many ISS could just have more students in general. To adjust for this, I found the number of ISS per 100 students. I repeated this equation for the number of days missed due to OOS and number of instances of single OOS (SINGOOS) and multiple OOS (MULTOOS). I included on the number of days missed into the analysis as it contributes to the severity of school suspensions rather than just the number given. Finally, I determined the amount each school spends per student by dividing the total spent on personnel and non-personnel by the total enrolled. I also applied to calculation to the total spent on type of personnel to better understand where a school spends the majority of funds. These types of personnel include teachers,  administration, support services and instructional aid. In all expenditure variables, I focused on dollar amounts without federal funding as federal funding is a minority of total funding and it is determined by a number of factors. Comparatively, dollar amounts without federal funding are largely determined by state and local funding which prioritizes location and the demographics of each neighbourhood.
 
-Part of the analysis:
-1. Number of days missed due to suspension (TOT_DAYSMISSED) - Created this variable by summing total days missed for females (TOT_DAYSMISSED_F) and total days missed for males (OT_DAYSMISSED_M). I chose this because it speaks to the severity of the suspension. More days missed means the suspensions were for a longer period of time.
-2. Salary expenditures for total personnel without federal funding (COST_PER_STUDENT_WOFED) - Created this variable by dividing the salary with the number of students to understand how much each school was spending per student. 
-3. Amount of non-personnel expenditures associated with activities (COST_PER_STUDENT_NPE_WOFED) - cost per student creation.
-Might include variables that separate total personnel such as teachers, administration, support services, instructional aid)
-4. all expenditures are WOFED (without federal funding) to focus on state expenditures rather than federal intervention
+## Missing Data
 
-DC and Hawaii are not included because there are no schools that only offer 9-12. Schools either offer more grades, fewer grades or ungraded.
-Focus on schools that report their data, excluding ones that do not which could prove problematic. What are they type of schools that are not reporting stats?
-Self reporting raises the question of accurate reporting
+It is crucially important to discuss the data that were purposefully excluded and that were under or unreported by the contributing schools. The decision to combine columns regardless of race, gender of disability has a variety of consequences. Namely, it could provide an additional analysis of the circumstances and address a larger portion of the hypothesis and theory. For example, a school with a high count of days missed due to OOS could have severely punished only one minority student in a majority white school population, highlighting extreme instances of discriminatory disciplinary practices. This type of analysis will not be reflected in the model and could be a property of causality. It should be noted that it is a necessary and urgent area of study, as many studies indicate that demographics are a substantial factor in suspension rates.
+
+In addition, schools that underreport or do not report data at all, could severely affect the results. Data quality is dependent on truthful and reliable self-reporting. In the raw data, there are schools that disclose a $1,000 spend on personnel salary in the 2015-2016 school year and ones that disclose a spend of over four hundred million dollars. These outliers can lessen or inflate the extent of association between expenditures and suspensions. Additionally, schools that do not report any data raise questions of biases. There could be a type of school that is not reporting their numbers and could potentially be concealing some significant figures. 
 
 ```{r, include=FALSE}
 
@@ -158,6 +154,49 @@ disc_high_sum <- disc_high %>%
 ```
 
 
+# Model
+
+In order to understand if a relationship exists between the amount spent per student and the number of suspensions (ISS and OOS), I performed multiple linear regression. This model was appropriate for an exploratory analysis of quantitative data, allowing for further investigation into the relationship and how that may be conducted in the future. Through multiple linear regression, I am unable to decisively conclude results but rather explore if any relationship exists and to the potential strength. I will be using four standard linear regression models, each with separate dependent variables and two predictors as follows:
+
+$$Y = \beta_{0} + \beta_{1}X_{1} + \beta_{2}X_{2} + \epsilon$$
+In the first model(1), $Y$ is the number of ISS per 100 students, $X_{1}$ is the amount spent per student on personnel without federal funding $X_{2}$ is the amount spent per student on non-personnel with federal funding. Additionally, $\beta_{0}$ represents the predicted value of $Y$ when $X$ is 0 and $\beta_{1}$ and $\beta_{2}$ are the expected change to $Y$ when $X_{1}$ and $X_{2}$ increase. This model is repeated for three other dependent variables ($Y$): single OOS (2), multiple OOS (3) and number of days missed due to OOS (4). 
+
+# Results
+
+The model was run on four independent variables to explore if there is an association with the amount a schools spends on personnel and non-personnel and different types of school suspensions. While ISS are seen as less punitive forms of punishment, they still can lead to missed educational opportunities, ostracization and a decrease in attentiveness. In addition, the amount of OOS, both single and multiple, can inform our understanding of the severity of punishment, especially when observing the number of days missed. There is also access to the type of personnel and the correlated spend per student. Using this data, we can see if there is any association between salary of teachers, administration and support staff and the number of ISS and OOS. In the next two section, I will discuss the results of all models.
+
+## ISS and OOS Models
+
+The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), a one dollar increase in spend per student on personnel is associated with a -0.00005 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is an extremely small increase. Interestingly, a one dollar increase in spend per student on non-personnel is associated with a 0.00001 increase in instances of ISS. 
+
+Both the second and third model reveals no association between instances in single OOS and multiple OOS, respectively, and spend per student on personnel ($X_{1}$) and non-personnel ($X_{2}$). Finally, model four displays some association between number of days missed due to OOS and spend per student on personnel, but no association with spend per student on non-personnel. These results are contradictory, as I would assume if we were to see an association between days missed due to OOS and spend, we would also see some sort of association between the number of single and multiple OOS. An increase in OOS should correspondingly lead to an increase in days missed.
+
+```{r lmiss, echo=FALSE, warning=FALSE, message = FALSE}
+
+lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+
+huxreg("ISS" = lmiss, "SINGOOS" = lmsingoos, "MULTOOS" = lmmultoos, "DAYS MISSED" = lmdays, number_format = 5)
+
+```
+
+
+The question here is if an increase in spend per student is associated with a decrease in in schools suspensions or the severity of school suspensions (number of days missed). Although the model suggests that there is some relationship, it is not a representation of a causal relationship. There are many factors that could lead to high suspension rates in schools. Studies have been done that determine high-suspending schools are usually schools from in low-income communities and have a higher population of minority students. 
+
+Funding of schools relies on the majority of state and local funding. Local funding is collected from property taxes and other taxes such as sales and income. This automatically leads to a discrepancy as low-income communities collect less property tax (cheaper housing) and less sales and income tax (less income = less spending). Very few states attempt to equalize school funding, and even in states that do, there is still a large discrepancy with the amount of resources schools receive.
+
+initial findings:
+there is some relationship between number of days missed due to suspensions and salary expenditures of all school personnel
+there is some relationship between in school suspensions and number and salary expenditures of all school personnel
+there is some relationship between number of days missed due to suspensions and salary of teachers but no relationship between days missed and salary of other personnel (aid, support services, administration)
+there is some relationship between number of in school suspensions and number of teachers. this is probably due to more teachers = more students = more suspensions
+there is no relationship between number of in school suspensions and number of teachers per student... odd
+looking at the 10 most populous states, half of them have a relationship between days missed and salary of all school personnel but the other half have no relationship. Broadening to the entire population, there is a strong relationship so there is something to explore there.
+
+Prior to conducting multiple linear regression, I plotted the applicable data to view any preliminary patters using `ggplot2` [@ggplot2] for graphs and `scales` [@scales] to prepare readable numbers. Figure \@ref(fig:issplot) is an example of the initial graphs. It captures the amount spent per student without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. 
+
 ```{r issplot, echo=FALSE, warning=FALSE, message = FALSE}
 
 issplot <- disc_high_sum %>%
@@ -185,25 +224,16 @@ issplot + issplotzoom
 
 
 
-# Model
 
-Will be using multiple linear regression. Cannot use a diff in diff approach because there are not enough variables. Although school districts are available, they do not match records that I can find.
 
-# Results
 
-The question here is if an increase in spend per student is associated with a decrease in in schools suspensions or the severity of school suspensions (number of days missed). Although the model suggests that there is some relationship, it is not a representation of a causal relationship. There are many factors that could lead to high suspension rates in schools. Studies have been done that determine high-suspending schools are usually schools from in low-income communities and have a higher population of minority students. 
 
-Funding of schools relies on the majority of state and local funding. Local funding is collected from property taxes and other taxes such as sales and income. This automatically leads to a discrepancy as low-income communities collect less property tax (cheaper housing) and less sales and income tax (less income = less spending). Very few states attempt to equalize school funding, and even in states that do, there is still a large discrepancy with the amount of resources schools receive.
 
-initial findings:
-there is some relationship between number of days missed due to suspensions and salary expenditures of all school personnel
-there is some relationship between in school suspensions and number and salary expenditures of all school personnel
-there is some relationship between number of days missed due to suspensions and salary of teachers but no relationship between days missed and salary of other personnel (aid, support services, administration)
-there is some relationship between number of in school suspensions and number of teachers. this is probably due to more teachers = more students = more suspensions
-there is no relationship between number of in school suspensions and number of teachers per student... odd
-looking at the 10 most populous states, half of them have a relationship between days missed and salary of all school personnel but the other half have no relationship. Broadening to the entire population, there is a strong relationship so there is something to explore there.
 
 # Discussion
+
+
+## Causality
 
 speak to causality, what you would do, and why you can't do it
 Not able to do diff in diff so there could be some factors causing suspensions rates that are not discussed in the paper. States could vary drastically, especially in political values, thus outlooks on criminality, punishment and tolerance.

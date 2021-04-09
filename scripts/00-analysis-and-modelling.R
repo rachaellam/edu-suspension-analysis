@@ -95,8 +95,6 @@ disc_high <- high %>%
 disc_high_sum <- disc_high %>%
   filter_at(vars(SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WOFED, SCH_SAL_ADM_WOFED, SCH_FTE_TEACH_WOFED), all_vars(. > 0)) %>% # -9 and -5 is unreported
   mutate(TOT_DAYSMISSED = select(., "TOT_DAYSMISSED_F", "TOT_DAYSMISSED_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_EXPWE = select(., "TOT_DISCWODIS_EXPWE_F", "TOT_DISCWODIS_EXPWE_M")  %>% rowSums(na.rm = TRUE)) %>%
-  mutate(TOT_EXPWOE = select(.,  "TOT_DISCWODIS_EXPWOE_F", "TOT_DISCWODIS_EXPWOE_M")  %>% rowSums(na.rm = TRUE)) %>%
   mutate(TOT_ISS = select(., "TOT_DISCWODIS_ISS_F", "TOT_DISCWODIS_ISS_M")  %>% rowSums(na.rm = TRUE)) %>%
   mutate(TOT_MULTOOS = select(., "TOT_DISCWODIS_MULTOOS_F", "TOT_DISCWODIS_MULTOOS_M")  %>% rowSums(na.rm = TRUE)) %>%
   mutate(TOT_SINGOOS = select(., "TOT_DISCWODIS_SINGOOS_F", "TOT_DISCWODIS_SINGOOS_M")  %>% rowSums(na.rm = TRUE)) %>%
@@ -111,7 +109,7 @@ disc_high_sum <- disc_high %>%
   transform(ISS_PER_100 = round(((TOT_ISS / TOT_ENR) * 100), digits = 2)) %>%
   transform(MULTOOS_PER_100 = round(((TOT_MULTOOS / TOT_ENR) * 100), digits = 2)) %>%
   transform(SINGOOS_PER_100 = round(((TOT_SINGOOS / TOT_ENR) * 100), digits = 2)) %>%
-  select(LEA_STATE, LEA_STATE_NAME, LEAID, LEA_NAME, SCHID, SCH_NAME, SCH_NAME, COMBOKEY, TOT_ENR, TOT_DAYSMISSED, DAYSMISSED_PER_100, TOT_EXPWE, TOT_EXPWOE, TOT_ISS, 
+  select(LEA_STATE, LEA_STATE_NAME, LEAID, LEA_NAME, SCHID, SCH_NAME, SCH_NAME, COMBOKEY, TOT_ENR, TOT_DAYSMISSED, DAYSMISSED_PER_100, TOT_ISS, 
          ISS_PER_100, TOT_MULTOOS, MULTOOS_PER_100, TOT_SINGOOS, SINGOOS_PER_100, SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WOFED, 
          SCH_SAL_ADM_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, 
          SPEND_PER_STUDENT_NPE_WOFED) %>%
@@ -122,6 +120,7 @@ disc_high_sum <- disc_high %>%
 issplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed", formula = 'y ~ x') +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   labs(x = "Spend per student without federal funding",
@@ -131,6 +130,7 @@ issplot <- disc_high_sum %>%
 issplotzoom <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed", formula = 'y ~ x') +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000))+
@@ -205,10 +205,13 @@ daysnpe + daysnpezoom
 
 # modelling
 lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
-summary(lmper)
+summary(lmiss)
 
 lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 summary(lmdays)
+
+lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 
 lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = disc_high_sum)
 summary(lmtype)
