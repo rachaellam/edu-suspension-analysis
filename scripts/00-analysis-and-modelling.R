@@ -364,6 +364,19 @@ summary(lmdem)
 lmdemdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = dem)
 summary(lmdemdays)
 
+### Polynomial Testing ###
 
+test <- disc_high_sum %>%
+  filter(SPEND_PER_STUDENT_WOFED < 20000)
 
+testfit <- test %>%
+  lm(formula = ISS_PER_100 ~ poly(SPEND_PER_STUDENT_WOFED, 2, raw = TRUE))
+
+summary(testfit)
+
+test %>%
+  ggplot(aes(x = SPEND_PER_STUDENT_WOFED, y = ISS_PER_100)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
+  scale_x_continuous(labels = comma)
 

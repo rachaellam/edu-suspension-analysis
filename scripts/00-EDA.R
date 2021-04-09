@@ -250,13 +250,3 @@ reg <- disc_high_sum %>%
          | LEA_STATE_NAME == "MAINE" | LEA_STATE_NAME == "RHODE ISLAND" | LEA_STATE_NAME == "MISSOURI" | LEA_STATE_NAME == "ILLINOIS" | LEA_STATE_NAME == "NEVADA"
          | LEA_STATE_NAME == "NEW HAMPSHIRE")
 
-
-
-
-
-
-
-
-  
-
-
