@@ -1,5 +1,5 @@
 ---
-title: "TBD"
+title: "Public School Expenditures and Suspensions"
 author: "Rachael Lam"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 header-includes:
@@ -7,8 +7,8 @@ header-includes:
   - \floatplacement{figure}{H}  #make every figure with caption = h, this was the fix
 output:
   bookdown::pdf_document2:
-subtitle: "TBD"
-abstract: TBD \newpage
+subtitle: "An Exploratory Analysis of How Expenditures Affect the Rate of In-School Suspensions"
+abstract: For decades, not only have exclusionary punishment practices forcibly removed children from educational opportunities and fueled the school-to-prison pipeline they have also indirectly negatively affected students who attend high-suspension rate schools. A broad range of studies have documented the suspension inequality that largely affects students of colour, students with discibilities, LGBTQ+ students and students from socioeconomically disadvantaged neighbourhoods. In this study, I attempt to add to the current literature by exploring if any association between school expenditures and suspension rates exists. Although there is some relationship discovered, it is not the best fit model and therefore, causality cannot be found. In the later half of the paper, I discuss how causality can be found with the right study and a discussion on the necessary steps to lower suspension rates for the benefit of all students and staff. \newpage
 thanks: 'Code and data are available at: https://github.com/rachaellam/edu-suspension-analysis.git.'
 toc: yes
 bibliography: references.bib
@@ -23,23 +23,24 @@ bibliography: references.bib
 # install.packages("tidyverse")
 # install.packages("tidyr")
 # install.packages("ggplot2")
+# install.packages("gridExtra")
 # install.packages("scales")
 # install.packages("reshape2")
 # install.packages("knitr)
-# install.packages("palmerpenguins")
-# install.packages("patchwork")
+# install.packages("kableExtra")
 # install.packages("huxtable")
 
 library(here)
 library(devtools)
-library(tidyr)
+library(dplyr)
 library(tidyverse)
+library(tidyr)
 library(ggplot2)
+library(gridExtra)
 library(scales)
 library(reshape2)
 library(knitr)
-library(palmerpenguins)
-library(patchwork)
+library(kableExtra)
 library(huxtable)
 
 ```
@@ -55,17 +56,21 @@ Socioeconomic circumstances also play a crucial role in determining OOS and ISS 
 
 # Data
 
-To attempt an analysis on school expenditures and disciplinary punishment, I manipulated public school data from the 2015-2016 school year [@data]. These data are collected by the Civil Rights Data Collection (CRDC) for use by the U.S. Department of Education and other policy and research agencies. The dataset was gathered in 2017 and last updated on September 28, 2018. The raw data includes 96,360 schools and 1,836 school attributes including school name, location and type; grades offered between preschool and grade 12; population of the school segmented by race and gender; type of classes and sports available; total instances of bullying, absenses, offenses, suspension and expulsions; special education and gifted and talented programs; and financial expenditures of personnel and non-personnel. Using `R` [@citeR], `tidyverse` [@tidyverse], `tidyr` [@tidyr], `devtools` [@devtools] and `dplyr` [@dplyr], I cleaned and extracted the necessary data to complete an exploritory analysis and modelling.
+To attempt an analysis on school expenditures and disciplinary punishment, I manipulated public school data from the 2015-2016 school year [@data]. These data are collected by the Civil Rights Data Collection (CRDC) for use by the U.S. Department of Education and other policy and research agencies. The dataset was gathered in 2017 and last updated on September 28, 2018. The raw data includes 96,360 schools and 1,836 school attributes including school name, location and type; grades offered between preschool and grade 12; population of the school segmented by race and gender; type of classes and sports available; total instances of bullying, absenses, offenses, suspension and expulsions; special education and gifted and talented programs; and financial expenditures of personnel and non-personnel (NPE). Using `R` [@citeR], `tidyverse` [@tidyverse], `tidyr` [@tidyr], `devtools` [@devtools] and `dplyr` [@dplyr], I cleaned and extracted the necessary data to complete an exploritory analysis and modelling.
 
 To begin, I removed any school that was labelled alternative, charter, magnet, special education, or juvenile justice facility as I concentrated on schools that were publicly funded and adhered to the same rules and regulations. I then filtered schools that only offer grades 9-12, excluded schools that offer partial grades (ex. grades 10-12) and eliminated schools that offer preschool to grade 8 in order to limit the scope and examine similar schools. The analysis would be unbalanced if schools that only offer two grades were being compared to schools that offer four grades. Unfortunately, Hawaii and the District of Columbia were not included in the dataset after filtering by grade because there are no schools that only offer grades 9-12. In these states, schools either offer more grades, fewer grades or are ungraded, according to the dataset. Additionally, I removed columns that focused on special education and conducted the analysis without racial attributes, although this could be another area of analysis in the future especially as it is well documented that race and disabilities have an adverse affect on suspension rates. Finally, I removed any attributes regarding classes, sports, absences, offenses and bullying.
 
-Before adding calculations of the data, I removed any schools that did not report their financial records. Schools that reported -5 signified that there were missing values but also an action plan for providing the necessary data for the subsequent school year. I then began combining columns to produce new variables that sum the number of ISS and OOS as number of enrollment and suspensions were categorized by gender. Additionally, I calculated new variables that would yield an standardizing affect on schools. For example, schools that have many ISS could just have more students in general. To adjust for this, I found the number of ISS per 100 students. I repeated this equation for the number of days missed due to OOS and number of instances of single OOS (SINGOOS) and multiple OOS (MULTOOS). I included on the number of days missed into the analysis as it contributes to the severity of school suspensions rather than just the number given. Finally, I determined the amount each school spends per student by dividing the total spent on personnel and non-personnel by the total enrolled. I also applied to calculation to the total spent on type of personnel to better understand where a school spends the majority of funds. These types of personnel include teachers,  administration, support services and instructional aid. In all expenditure variables, I focused on dollar amounts without federal funding as federal funding is a minority of total funding and it is determined by a number of factors. Comparatively, dollar amounts without federal funding are largely determined by state and local funding which prioritizes location and the demographics of each neighbourhood.
+Before adding calculations of the data, I removed any schools that did not report their financial records. Schools that reported -5 signified that there were missing values but also an action plan for providing the necessary data for the subsequent school year. I then began combining columns to produce new variables that sum the number of ISS and OOS as number of enrollment and suspensions were categorized by gender. Additionally, I calculated new variables that would yield an standardizing affect on schools. For example, schools that have many ISS could just have more students in general. To adjust for this, I found the number of ISS per 100 students. I repeated this equation for the number of days missed due to OOS and number of instances of single OOS (SINGOOS) and multiple OOS (MULTOOS). I included on the number of days missed into the analysis as it contributes to the severity of school suspensions rather than just the number given. Finally, I determined the amount each school spends per student by dividing the total spent on personnel and non-personnel by the total enrolled. I also applied to calculation to the total spent on type of personnel to better understand where a school spends the majority of funds. These types of personnel include teachers,  administration, support services and instructional aid. In all expenditure variables, I focused on dollar amounts without federal funding (WOFED) as federal funding is a minority of total funding and it is determined by a number of factors. Comparatively, dollar amounts without federal funding are largely determined by state and local funding which prioritizes location and the demographics of each neighbourhood.
 
 ## Missing Data
 
 It is crucially important to discuss the data that were purposefully excluded and that were under or unreported by the contributing schools. The decision to combine columns regardless of race, gender of disability has a variety of consequences. Namely, it could provide an additional analysis of the circumstances and address a larger portion of the hypothesis and theory. For example, a school with a high count of days missed due to OOS could have severely punished only one minority student in a majority white school population, highlighting extreme instances of discriminatory disciplinary practices. This type of analysis will not be reflected in the model and could be a property of causality. It should be noted that it is a necessary and urgent area of study, as many studies indicate that demographics are a substantial factor in suspension rates.
 
 In addition, schools that underreport or do not report data at all, could severely affect the results. Data quality is dependent on truthful and reliable self-reporting. In the raw data, there are schools that disclose a $1,000 spend on personnel salary in the 2015-2016 school year and ones that disclose a spend of over four hundred million dollars. These outliers can lessen or inflate the extent of association between expenditures and suspensions. Additionally, schools that do not report any data raise questions of biases. There could be a type of school that is not reporting their numbers and could potentially be concealing some significant figures. 
+
+## Plots
+
+
 
 ```{r, include=FALSE}
 
@@ -159,19 +164,29 @@ disc_high_sum <- disc_high %>%
 In order to understand if a relationship exists between the amount spent per student and the number of suspensions (ISS and OOS), I performed multiple linear regression. This model was appropriate for an exploratory analysis of quantitative data, allowing for further investigation into the relationship and how that may be conducted in the future. Through multiple linear regression, I am unable to decisively conclude results but rather explore if any relationship exists and to the potential strength. I will be using four standard linear regression models, each with separate dependent variables and two predictors as follows:
 
 $$Y = \beta_{0} + \beta_{1}X_{1} + \beta_{2}X_{2} + \epsilon$$
-In the first model(1), $Y$ is the number of ISS per 100 students, $X_{1}$ is the amount spent per student on personnel without federal funding $X_{2}$ is the amount spent per student on non-personnel with federal funding. Additionally, $\beta_{0}$ represents the predicted value of $Y$ when $X$ is 0 and $\beta_{1}$ and $\beta_{2}$ are the expected change to $Y$ when $X_{1}$ and $X_{2}$ increase. This model is repeated for three other dependent variables ($Y$): single OOS (2), multiple OOS (3) and number of days missed due to OOS (4). 
+
+In the first model (1), $Y$ is the number of ISS per 100 students, $X_{1}$ is the amount spent per student on personnel without federal funding and $X_{2}$ is the amount spent per student on without-personnel with federal funding. Additionally, $\beta_{0}$ represents the predicted value of $Y$ when $X$ is 0 and $\beta_{1}$ and $\beta_{2}$ are the expected change to $Y$ when $X_{1}$ and $X_{2}$ increase. This model is repeated for three other dependent variables ($Y$): single OOS (2), multiple OOS (3) and number of days missed due to OOS (4). 
+
+Additionally, I produced a model to investigate the relationship between ISS and salary of teachers, instructional aid, support services staff and administration. The model is as follows:
+
+$$Y = \beta_{0} + \beta_{1}X_{1} + \beta_{2}X_{2} + \beta_{3}X_{3} + \beta_{4}X_{4} + \epsilon$$
+
+$Y$ is the number of ISS per 100 students, $X_{1}$ is the amount spent per student on teachers without federal funding, $X_{2}$ is the amount spent per student on instructional aid without federal funding, $X_{3}$ is the amount spent per student on support services staff without federal funding, and $X_{4}$ is the amount spent per student without federal funding. Similarly to the first model, $\beta_{0}$ represents the predicted value of $Y$ when $X$ is 0 and $\beta_{1}$,  $\beta_{2}$, $\beta_{3}$ and $\beta_{4}$ are the expected change to $Y$ when $X_{1}$,  $X_{2}$, $X_{3}$ and $X_{4}$ increase.
+
+To add:
+How features enter the model and why
+Alternative models or variants with strengths and weaknesses
+Circumstances in which the model may not be appropriate
+Model validation and checking (test/training?)
+Aspects discussed in data assert themselves
 
 # Results
 
 The model was run on four independent variables to explore if there is an association with the amount a schools spends on personnel and non-personnel and different types of school suspensions. While ISS are seen as less punitive forms of punishment, they still can lead to missed educational opportunities, ostracization and a decrease in attentiveness. In addition, the amount of OOS, both single and multiple, can inform our understanding of the severity of punishment, especially when observing the number of days missed. There is also access to the type of personnel and the correlated spend per student. Using this data, we can see if there is any association between salary of teachers, administration and support staff and the number of ISS and OOS. In the next two section, I will discuss the results of all models.
 
-## ISS and OOS Models
+## ISS and OOS Results
 
-The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), a one dollar increase in spend per student on personnel is associated with a -0.00005 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Interestingly, a one dollar increase in spend per student on non-personnel is associated with a 0.00001 increase in instances of ISS. 
-
-Both the second and third model reveals no association between instances in single OOS and multiple OOS, respectively, and spend per student on personnel ($X_{1}$) and non-personnel ($X_{2}$). These models only explain that the data is not unusual under this model, rather than proof of a decisive causal relationship. Finally, model four displays some association between number of days missed due to OOS and spend per student on personnel, but no association with spend per student on non-personnel. These results are contradictory, as I would assume if we were to see an association between days missed due to OOS and spend, we would also see some sort of association between the number of single and multiple OOS. An increase in OOS should correspondingly lead to an increase in days missed. 
-
-Unfortunately, in all models, the residual standard percentage error is well over 100%, signifying a poor model fit for the data. As a result, the model leads to inconclusive results and it is indeterminable whether or not school spend has any affect on the number of ISS and OSS with the data provided. 
+The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), a one dollar increase in spend per student on personnel $\beta_{1}$ is associated with a -0.00005 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Interestingly, a one dollar increase in spend per student on non-personnel $\beta_{2}$ is associated with a 0.00001 increase in instances of ISS. Below Table \@ref(tab:lmiss) is the plotted data shown in Figure \@ref(fig:issplot) using `ggplot2` [@ggplot2] for graphs, `scales` [@scales] to prepare readable numbers and `kableExtra` [@kableExtra] to combine the graphs. It captures the amount spent per student on personnel without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. Additionally, Figure \@ref(fig:issnpe) presents the data on amount spent per student on non-personnel without federal funding on the x-axis and the number of ISS per 100 students on the y-axis.
 
 ```{r lmiss, echo=FALSE, warning=FALSE, message = FALSE}
 
@@ -180,35 +195,20 @@ lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NP
 lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 
-huxreg("ISS" = lmiss, "SINGOOS" = lmsingoos, "MULTOOS" = lmmultoos, "DAYS MISSED" = lmdays, number_format = 5, ci_level = .95, error_format = "({conf.low} -- {conf.high})", bold_signif = 0.05)
+huxreg("ISS" = lmiss, number_format = 5, bold_signif = 0.05)
 
 ```
 
-
-The question here is if an increase in spend per student is associated with a decrease in in schools suspensions or the severity of school suspensions (number of days missed). Although the model suggests that there is some relationship, it is not a representation of a causal relationship. There are many factors that could lead to high suspension rates in schools. Studies have been done that determine high-suspending schools are usually schools from in low-income communities and have a higher population of minority students. 
-
-Funding of schools relies on the majority of state and local funding. Local funding is collected from property taxes and other taxes such as sales and income. This automatically leads to a discrepancy as low-income communities collect less property tax (cheaper housing) and less sales and income tax (less income = less spending). Very few states attempt to equalize school funding, and even in states that do, there is still a large discrepancy with the amount of resources schools receive.
-
-initial findings:
-there is some relationship between number of days missed due to suspensions and salary expenditures of all school personnel
-there is some relationship between in school suspensions and number and salary expenditures of all school personnel
-there is some relationship between number of days missed due to suspensions and salary of teachers but no relationship between days missed and salary of other personnel (aid, support services, administration)
-there is some relationship between number of in school suspensions and number of teachers. this is probably due to more teachers = more students = more suspensions
-there is no relationship between number of in school suspensions and number of teachers per student... odd
-looking at the 10 most populous states, half of them have a relationship between days missed and salary of all school personnel but the other half have no relationship. Broadening to the entire population, there is a strong relationship so there is something to explore there.
-
-Prior to conducting multiple linear regression, I plotted the applicable data to view any preliminary patters using `ggplot2` [@ggplot2] for graphs and `scales` [@scales] to prepare readable numbers. Figure \@ref(fig:issplot) is an example of the initial graphs. It captures the amount spent per student without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. 
-
-```{r issplot, echo=FALSE, warning=FALSE, message = FALSE}
+```{r, include=FALSE}
 
 issplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
-  labs(x = "Spend per student without federal funding",
-       y = "Number of in school suspensions per 100 students",
-       title = "Spend $0-250,000")
+  labs(x = "Spend per student WOFED",
+       y = "ISS per 100 students",
+       title = "ISS x Spend $0-250,000")
 
 issplotzoom <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
@@ -216,77 +216,182 @@ issplotzoom <- disc_high_sum %>%
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000))+
-  labs(x = "Spend per student without federal funding",
-       y = "Number of in school suspensions per 100 students",
-       title = "Spend $0-50,000")
+  labs(x = "Spend per student WOFED",
+       y = "ISS per 100 students",
+       title = "ISS x Spend $0-50,000")
 
-issplot + issplotzoom
+```
+
+```{r issplot, fig.cap="ISS and Spend on Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
+
+issgraphs <-
+  grid.arrange(issplot, issplotzoom,
+               ncol = 1)
 
 ```
 
 
+```{r, include=FALSE}
 
+issnpe <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student on NPE WOFED",
+       y = "ISS per 100 students",
+       title = "ISS NPE x Spend $0-1,000,000")
 
+issnpezoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000)) +
+  labs(x = "Spend per student on NPE WOFED",
+       y = "ISS per 100 students",
+       title = "ISS NPE x Spend $0-50,000")
 
+```
 
+```{r issnpe, fig.cap="ISS and Spend on Non-Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
 
+issnpegraphs <-
+  grid.arrange(issnpe, issnpezoom,
+               ncol = 1)
+
+```
+
+Both the second and third model (Table \@ref(tab:lmiss2)) reveals no association between instances in single OOS and multiple OOS, respectively, and spend per student on personnel ($X_{1}$) and non-personnel ($X_{2}$). These models only explain that the data is not unusual under this model, rather than proof of a decisive causal relationship. Finally, model four displays some association between number of days missed due to OOS and spend per student on personnel, but no association with spend per student on non-personnel. A one dollar increase in spend per student on personnel $\beta_{1}$, leads to a -0.00033 decrease in the number of days missed due to OOS. These results are seemingly contradictory, as I would assume if we were to see an association between days missed due to OOS and spend, we would also see some sort of association between the number of single and multiple OOS. An increase in OOS should correspondingly lead to an increase in days missed. Figure \@ref(fig:daysplot) displays the data of model four, using similar tactics to Figure \@ref(fig:issplot), with the amount spent per student on personnel without federal funding on the x-axis and the number of days missed due to OOS per 100 students of the y-axis. Additionally, Figure \@ref(fig:daysnpe) plots the amount spent per student on non-personnel without federal funding on the x-axis and the number of days missed due to OOS per 100 students on the y-axis. Unfortunately, in all models, the residual standard percentage error is well over 100%, signifying a poor model fit for the data. As a result, the model leads to inconclusive results and it is indeterminable whether or not school spend has any affect on the number of ISS and OSS with the data provided. 
+
+```{r lmiss2, echo=FALSE, warning=FALSE, message = FALSE, fig.width=8, fig.height=6}
+
+huxreg("SINGOOS" = lmsingoos, "MULTOOS" = lmmultoos, "DAYS MISSED" = lmdays, number_format = 5, bold_signif = 0.05)
+
+```
+
+```{r, include=FALSE}
+
+daysmissedplot <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student WOFED",
+       y = "Days missed per 100 students",
+       title = "Days Missed x Spend $0-250,000")
+
+daysmissedplotzoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000)) +
+  labs(x = "Spend per student WOFED",
+       y = "Days missed per 100 students",
+       title = "Days Missed x Spend $0-250,000")
+
+```
+
+```{r daysplot, fig.cap="Days Missed and Spend on Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
+
+daysgraphs <-
+  grid.arrange(daysmissedplot, daysmissedplotzoom,
+               ncol = 1)
+
+```
+
+```{r, include=FALSE}
+
+daysnpe <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student on NPE WOFED",
+       y = "Days missed due per 100 students",
+       title = "Days Missed x Spend $0-1,000,000")
+
+daysnpezoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000)) +
+  labs(x = "Spend per student on NPE WOFED",
+       y = "Days missed per 100 students",
+       title = "Days Missed x Spend $0-50,000")
+
+```
+
+```{r daysnpe, fig.cap="Days Missed and Spend on Non-Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
+
+daysgraphs <-
+  grid.arrange(daysnpe, daysnpezoom,
+               ncol = 1)
+
+```
+
+## Salary Results
+
+Although the initial models produced inconclusive results, I wanted to investigate further into the relationship between different salary expenditures and ISS. Following the same multiple linear regression model, I used ISS ($Y$) as the independent variable and the spend per student on teachers, instructional aid, support services staff and administration as the four dependent variables. The results in Table @\ref(tab:lmtype) indicate some relationship between ISS and salary spent on teachers and support services staff, although no association between ISS and salary spent on instructional aids and administration. A dollar increase in amount spend per student on teachers $\beta_{1}$ produces a -0.00017 decrease in ISS per 100 students. Oddly, a one unit increase in amount spent per student on support services staff  $\beta_{3}$ causes an increase of 0.00007 in ISS per 100 students.
+
+```{r lmtype, echo=FALSE, warning=FALSE, message = FALSE}
+
+lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = disc_high_sum)
+
+huxreg("ISS" = lmtype, number_format = 5, bold_signif = 0.05)
+
+```
+
+These numbers could also be a result of the lack of funding in general to any non-personnel other than teachers. As public schools are consistently underfunded, many institutions do not have the resources allocate additional funds to assistive personnel. Using `knitr` [@knitr] and `kableExtra` [@kableExtra] Table \@ref(tab:salary) was created to show the spend on alternative educational roles is far below the resources dedicated to teachers. Both the mean and the median of instructional aid, support services and administration salary spend is several thousand dollars below that of the salary dedicated to teachers.
+
+```{r salary, echo=FALSE, warning=FALSE, message = FALSE}
+
+salary <- disc_high_sum %>%
+  select(SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED) %>%
+  melt() %>%
+  group_by(variable) %>%
+  summarize(the_min = min(value),
+            the_max = max(value),
+            the_mean = mean(value),
+            the_median = median(value),
+            std_dev = sd(value))
+
+salary %>%
+  kable(digits = 2,
+        caption = "Salary Overview Across All Schools",
+        col.names = c ("Spend Per Student", "Min", "Max", "Mean", "Median", "Standard Deviation"),
+        align = c('l', 'l', 'l', 'l', 'l'),
+        booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped")
+
+```
 
 
 # Discussion
 
+Summarize what was done in the paper
+Why it's important
+
+Funding of schools relies on the majority of state and local funding. Local funding is collected from property taxes and other taxes such as sales and income. This automatically leads to a discrepancy as low-income communities collect less property tax (cheaper housing) and less sales and income tax (less income = less spending). Very few states attempt to equalize school funding, and even in states that do, there is still a large discrepancy with the amount of resources schools receive.
+
+## Weaknesses
+
+School expenditures rely on funding which is directed by state laws, neighbourhood demographics and socioeconomic factors. By using expenditures, there are already a number of influencing variables that makes it difficult to find a causal relationship from the provided variables and models.
+
+Self-reporting makes it difficult to get accurate information.
+
 
 ## Causality
 
-speak to causality, what you would do, and why you can't do it
-Not able to do diff in diff so there could be some factors causing suspensions rates that are not discussed in the paper. States could vary drastically, especially in political values, thus outlooks on criminality, punishment and tolerance.
-create a study that gives certain schools an additional sum of money and see how it affects suspension rates.
+Although the model suggests that there is some relationship, it is not a representation of a causal relationship. There are many factors that could lead to high suspension rates in schools. Even when discussing expenditures, there are many factors that determine how much funding a school receives in funding based on state laws. Additionally, demographics of students or school characteristics can influence the number of school suspensions. Studies have been done that determine high-suspending schools are usually schools from in low-income communities and have a higher population of minority students. Certain studies also 
+
+Discuss a potential study that gives certain schools an additional sum of money and see how it affects suspension rates. Use Difference-in-Difference with schools on either side of state borders so that their characteristics are quite similar. Results could show that even with different state laws, schools still see a decrease in school suspensions with additional funding. Alternatively, results could prove that states and the allocation of funding have a greater association with school suspension rates.
 
 # Conclusion
 
 
-Rebecca Hinze-Pifera and Lauren Sartain: https://doi.org/10.1080/0161956X.2018.1435051
-- difficult to identify causal impact because of the many factors that go into deciding student suspension including personal biases
-- data quality problems due to schools under reporting
-- suspensions cause increase fear of crime, teacher attrition, anger, disconnect from school, impacts of missing school
-- negative impacts for not only students who are suspended but students who attend schools with high suspension rates
-- suspension inequality (race, gender, LGBTQ, special needs, socioeconomic factors)
-
-Jason Jabbari, Odis Johnson Jr: https://doi-org.myaccess.library.utoronto.ca/10.1177%2F0042085920902256
-- zero tolerance policies 1990s
-- exclusionary practices
-- urban communities with heightened police surveillance
-- school to prison pipeline
-- study that found students who attend high-suspension schools are negatively affected, even if they do not themselves receive a suspension.
-- mention a study that found students who received ISS suffered a lower GPA and higher dropout rates even though ISS has been seen as a less punitive form of punishment.
-
-Talisha Lee, Dewey Cornell, Anne Gregory, and Xitao Fan: doi:10.1353/etc.2011.0014
-- references studies that have been done that discuss the characteristics of a school with drop out rates
-- schools wit a higher percentage of low income students have higher drop out rates
-- higher rate of students from low socioeconomic backgrounds and a greater percentage of minority students were associated with high rates of school suspensions
-- schools with majority white students had more financial resources than schools with high percentage of minority students
-- drop out rates for rural areas tend to be lower than urban areas
-- reliant on schools to report drop out rates/retention rates but doesn't account for student mobility/declining school populations
-
-E. Christine Baker-Smith: https://doi.org/10.1080/0161956X.2018.1435043
-- exclusionary discipline related to lower levels of educational attainment, involvement in the criminal justice system, poor labour market outcomes
-- gun free schools act (1994) required any state "receiving federal funds to have a state law in effect requiring local educational agencies to expel, for at least one year, any student who is determined to have brought a weapon to school"
-- this act allowed schools to adopt harsher exclusionary practices against violent offenses, but it also brough an increased use of out of school suspensions for non-violent offences such as vulgar language, dress code violations, tardiness, or generic insubordination. 
-- zero tolerance policies
-- a randomized experiment found that teachers were more likely to punish a student who committed a second offense if they were black
-
-Russell J. Skiba Kavitha Mediratta M. Karega Rausch: Inequality in School Discipline Research and Practice to Reduce Disparities
-- racial disparities (black students are 3.5 times more likely to receive out of school suspensions than white students)
-- begins as early as preschool
-- experience harsher punishments
-- 1/3 of black high schools students receive suspensions in a given year compared to 1 of 10 white students
-- broadens to other ethnic minorities such as Indigenous students and Latinxs
-- disabilities combined with race increase chances of experiencing exclusionary practices. 
-- intersectionality
-- gender, race, sexual orientation and disability
-- controlling for socioeconomic status, Black students still encounter harsher disciplinary action than white counterparts
-- strong relationships between students, teachers and administrators were associated with lower suspension rates
-- loss of educational opportunity from out of school suspensions led to higher rates of dropouts
-- out of school suspensions propel contact with the incarceration system. A study found that delinquency or crime only occurred after suspension (school to prison pipeline)
  \pagebreak
  
 # References
