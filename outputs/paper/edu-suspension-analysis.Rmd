@@ -173,12 +173,24 @@ $$Y = \beta_{0} + \beta_{1}X_{1} + \beta_{2}X_{2} + \beta_{3}X_{3} + \beta_{4}X_
 
 $Y$ is the number of ISS per 100 students, $X_{1}$ is the amount spent per student on teachers without federal funding, $X_{2}$ is the amount spent per student on instructional aid without federal funding, $X_{3}$ is the amount spent per student on support services staff without federal funding, and $X_{4}$ is the amount spent per student without federal funding. Similarly to the first model, $\beta_{0}$ represents the predicted value of $Y$ when $X$ is 0 and $\beta_{1}$,  $\beta_{2}$, $\beta_{3}$ and $\beta_{4}$ are the expected change to $Y$ when $X_{1}$,  $X_{2}$, $X_{3}$ and $X_{4}$ increase.
 
+
 To add:
-How features enter the model and why
-Alternative models or variants with strengths and weaknesses
-Circumstances in which the model may not be appropriate
-Model validation and checking (test/training?)
-Aspects discussed in data assert themselves
+
+- How features enter the model and why
+
+- Alternative models or variants with strengths and weaknesses 
+
+- Circumstances in which the model may not be appropriate 
+
+- Model validation and checking (test/training?) 
+
+- Aspects discussed in data assert themselves 
+
+- outliers or high leverage points
+
+- non-linearity of the data 
+
+- polynomial regression?
 
 # Results
 
@@ -334,7 +346,7 @@ daysgraphs <-
 
 ## Salary Results
 
-Although the initial models produced inconclusive results, I wanted to investigate further into the relationship between different salary expenditures and ISS. Following the same multiple linear regression model, I used ISS ($Y$) as the independent variable and the spend per student on teachers, instructional aid, support services staff and administration as the four dependent variables. The results in Table @\ref(tab:lmtype) indicate some relationship between ISS and salary spent on teachers and support services staff, although no association between ISS and salary spent on instructional aids and administration. A dollar increase in amount spend per student on teachers $\beta_{1}$ produces a -0.00017 decrease in ISS per 100 students. Oddly, a one unit increase in amount spent per student on support services staff  $\beta_{3}$ causes an increase of 0.00007 in ISS per 100 students.
+Although the initial models produced inconclusive results, I wanted to investigate further into the relationship between different salary expenditures and ISS. Following the same multiple linear regression model, I used ISS ($Y$) as the independent variable and the spend per student on teachers, instructional aid, support services staff and administration as the four dependent variables. The results in Table \@ref(tab:lmtype) indicate some relationship between ISS and salary spent on teachers and support services staff, although no association between ISS and salary spent on instructional aids and administration. A dollar increase in amount spend per student on teachers $\beta_{1}$ produces a -0.00017 decrease in ISS per 100 students. Oddly, a one unit increase in amount spent per student on support services staff  $\beta_{3}$ causes an increase of 0.00007 in ISS per 100 students.
 
 ```{r lmtype, echo=FALSE, warning=FALSE, message = FALSE}
 
@@ -361,7 +373,7 @@ salary <- disc_high_sum %>%
 salary %>%
   kable(digits = 2,
         caption = "Salary Overview Across All Schools",
-        col.names = c ("Spend Per Student", "Min", "Max", "Mean", "Median", "Standard Deviation"),
+        col.names = c ("Spend Per Student", "Min", "Max", "Mean", "Median", "SD"),
         align = c('l', 'l', 'l', 'l', 'l'),
         booktabs = TRUE) %>%
   kable_styling(latex_options = "striped")
