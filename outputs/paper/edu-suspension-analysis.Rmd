@@ -80,7 +80,7 @@ In addition, schools that underreport or do not report data at all could severel
 
 ## Plots
 
-To initially better understand the data, I found the ten states with the highest number of enrollments and then plotted the total number of suspensions of those ten states (Figure \@tab(fig:statesuspensions))(Figure \@tab(fig:statesuspensions2)). In doing so, I compared the discrepancies between enrollment and suspensions as there should be a correlation between number enrolled and number of suspensions: those that have more numbers will more likely have more suspensions as well. Figure \@tab(fig:statesuspensions) and Figure \@tab(fig:statesuspensions2) present mostly as we would expect - the ten states with the highest enrollment can be seen in nearly all graphs which plot the number of ISS and OSS. Texas has the highest number of students from grades 9 to 12; they also have the highest number of ISS and OSS. There are, however, a few differences. California is particularly interesting, with the second highest number of enrolled students yet the lowest number of ISS. Additionally, Georgia has the fifth highest enrollment yet the second highest number of ISS and the third highest number of both Single OOS and Multiple OOS. This roughly signifies that 10% of enrolled students in Georgia receive one instance of ISS.
+To initially better understand the data, I found the ten states with the highest number of enrollments and then plotted the total number of suspensions of those ten states using `ggplot2` [@ggplot2] and `gridExtra` [@gridExtra] to arrange them. In doing so, I compared the discrepancies between enrollment and suspensions as there should be a correlation between number enrolled and number of suspensions: those that have more numbers will more likely have more suspensions as well. Figure \@tab(fig:statesuspensions) and Figure \@tab(fig:statesuspensions2) present mostly as we would expect - the ten states with the highest enrollment can be seen in nearly all graphs which plot the number of ISS and OSS. Texas has the highest number of students from grades 9 to 12; they also have the highest number of ISS and OSS. There are, however, a few differences. California is particularly interesting, with the second highest number of enrolled students yet the lowest number of ISS. Additionally, Georgia has the fifth highest enrollment yet the second highest number of ISS and the third highest number of both Single OOS and Multiple OOS. This roughly signifies that 10% of enrolled students in Georgia receive one instance of ISS.
 
 
 ```{r, include=FALSE}
@@ -267,7 +267,7 @@ sumgraphs <-
 
 ```
 
-```{r statesuspensions2, fig.cap="Number of Suspensions in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
+```{r statesuspensions2, fig.height=3, fig.cap="Number of Suspensions in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
 
 sumgraphs2 <- 
   grid.arrange(stateSINGOOSgraph, stateMULTOOSgraph,
@@ -317,7 +317,7 @@ statenpespendgraph <- statenpespend %>%
 
 ```
 
-```{r statespend, fig.cap="Spend in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
+```{r statespend, fig.height=3, fig.cap="Spend in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
 
 spendgraphs <-
   grid.arrange(enrollmentgraph, statespendgraph,
@@ -325,7 +325,7 @@ spendgraphs <-
 
 ```
 
-```{r statespend2, fig.cap="Spend in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
+```{r statespend2, fig.height=3, fig.cap="Spend in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
 
 spendgraphs2 <-
   grid.arrange(statenpespendgraph,
@@ -453,7 +453,7 @@ The model was run on four independent variables to explore if there is an associ
 
 ## ISS and OOS Results
 
-The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss),  a one dollar increase in spend per student on personnel $\beta_{1}$ is associated with a -0.00006 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Additionally, the $\beta_{0}$ states that if both salary of personnel and non-personnel were held at 0, there would be roughly 7.9 instances of ISS per 100 students. Interestingly, a one dollar increase in spend per student on non-personnel $\beta_{2}$ is associated with a 0.00002 increase in instances of ISS. Below Table \@ref(tab:lmiss) is the plotted data shown in Figure \@ref(fig:issplot) using `ggplot2` [@ggplot2] for graphs, `scales` [@scales] to prepare readable numbers and `kableExtra` [@kableExtra] to combine the graphs. It captures the amount spent per student on personnel without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. Additionally, Figure \@ref(fig:issnpe) presents the data on amount spent per student on non-personnel without federal funding on the x-axis and the number of ISS per 100 students on the y-axis.
+The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), presented by `huxtable` [@huxtable],  a one dollar increase in spend per student on personnel $\beta_{1}$ is associated with a -0.00006 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Additionally, the $\beta_{0}$ states that if both salary of personnel and non-personnel were held at 0, there would be roughly 7.9 instances of ISS per 100 students. Interestingly, a one dollar increase in spend per student on non-personnel $\beta_{2}$ is associated with a 0.00002 increase in instances of ISS. Below Table \@ref(tab:lmiss) is the plotted data shown in Figure \@ref(fig:issplot) using `ggplot2` [@ggplot2] for graphs, `scales` [@scales] to prepare readable numbers and `kableExtra` [@kableExtra] to combine the graphs. It captures the amount spent per student on personnel without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. Additionally, Figure \@ref(fig:issnpe) presents the data on amount spent per student on non-personnel without federal funding on the x-axis and the number of ISS per 100 students on the y-axis.
 
 ```{r lmiss, echo=FALSE, warning=FALSE, message = FALSE}
 
@@ -619,7 +619,7 @@ huxreg("ISS" = lmtype, number_format = 5, bold_signif = 0.05)
 
 ```
 
-These numbers could also be a result of the lack of funding in general to any non-personnel other than teachers. As public schools are consistently underfunded, many institutions do not have the resources to allocate additional funds to assistive personnel. Using `knitr` [@knitr] and `kableExtra` [@kableExtra], Table \@ref(tab:salary) was created to show the spend on alternative educational roles and how they are far below the resources dedicated to teachers. Although there will generally be a higher number of teachers than support staff, Table \@ref(tab:salary) indicate that both the mean and the median of instructional aid, support services and administration salary spend is several thousand dollars below that of the salary dedicated to teachers. Additionally, the minimum for instructional aid, support services and administration are \$0 compared to at least \$30.99 for teacher salaries.
+These numbers could also be a result of the lack of funding in general to any non-personnel other than teachers. As public schools are consistently underfunded, many institutions do not have the resources to allocate additional funds to assistive personnel. Using `knitr` [@knitr],  `kableExtra` [@kableExtra] and `reshape2` [@reshape2], Table \@ref(tab:salary) was created to show the spend on alternative educational roles and how they are far below the resources dedicated to teachers. Although there will generally be a higher number of teachers than support staff, Table \@ref(tab:salary) indicate that both the mean and the median of instructional aid, support services and administration salary spend is several thousand dollars below that of the salary dedicated to teachers. Additionally, the minimum for instructional aid, support services and administration are \$0 compared to at least \$30.99 for teacher salaries.
 
 ```{r salary, echo=FALSE, warning=FALSE, message = FALSE}
 
