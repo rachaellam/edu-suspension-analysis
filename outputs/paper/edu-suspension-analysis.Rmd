@@ -76,10 +76,11 @@ Before adding calculations of the data, I removed any schools that did not repor
 
 It is crucially important to discuss the data that were purposefully excluded and that were under or unreported by the contributing schools. The decision to combine columns regardless of race, gender of disability has a variety of consequences. Namely, it could provide an additional analysis of the circumstances and address a larger portion of the hypothesis and theory. For example, a school with a high count of days missed due to OOS could have severely punished only one minority student in a majority white school population, highlighting extreme instances of discriminatory disciplinary practices. This type of analysis will not be reflected in the model and could be a property of causality. It should be noted that it is a necessary and urgent area of study, as many studies indicate that demographics are a substantial factor in suspension rates.
 
-In addition, schools that underreport or do not report data at all could severely affect the results. Data quality is dependent on truthful and reliable self-reporting. In the raw data, there are schools that disclose a $1,000 spend on personnel salary in the 2015-2016 school year and ones that disclose a spend of over four hundred million dollars. These outliers can lessen or inflate the extent of association between expenditures and suspensions. Additionally, schools that do not report any data raise questions of biases. There could be a type of school that is not reporting their numbers and could potentially be concealing some significant figures. 
+In addition, schools that underreport or do not report data at all could severely affect the results. Data quality is dependent on truthful and reliable self-reporting. In the raw data, there are schools that disclose a $1,000 spend on personnel salary in the 2015-2016 school year and ones that disclose a spend of over four hundred million dollars. These outliers can lessen or inflate the extent of association between expenditures and suspensions. For the latter data point, after calculating the spend per student, it recorded \$2346486.911/student so I excluded the extreme outlier as I believe it was due to poor reporting. Additionally, schools that do not report any data raise questions of biases. There could be a type of school that is not reporting their numbers and could potentially be concealing some significant figures. 
 
 ## Plots
 
+To initially better understand the data, I found the ten states with the highest number of enrollments and then plotted the total number of suspensions of those ten states (Figure \@tab(fig:statesuspensions)). In doing so, I compared the discrepancies between enrollment and suspensions as there should be a correlation between number enrolled and number of suspensions: those that have more numbers will more likely have more suspensions as well. Figure \@tab(fig:statesuspensions) presents mostly as we would expect - the ten states with the highest enrollment can be seen in nearly all graphs which plot the number of ISS and OSS. Texas has the highest number of students from grades 9 to 12; they also have the highest number of ISS and OSS. There are, however, a few differences. California is particularly interesting, with the second highest number of enrolled students yet the lowest number of ISS. Additionally, Georgia has the fifth highest enrollment yet the second highest number of ISS and the third highest number of both Single OOS and Multiple OOS. This roughly signifies that 10% of enrolled students in Georgia receive one instance of ISS.
 
 
 ```{r, include=FALSE}
@@ -162,7 +163,7 @@ disc_high_sum <- disc_high %>%
   transform(SINGOOS_PER_100 = round(((TOT_SINGOOS / TOT_ENR) * 100), digits = 2)) %>%
   select(LEA_STATE, LEA_STATE_NAME, LEAID, LEA_NAME, SCHID, SCH_NAME, SCH_NAME, COMBOKEY, TOT_ENR, TOT_DAYSMISSED, DAYSMISSED_PER_100, TOT_EXPWE, TOT_EXPWOE, TOT_ISS, 
          ISS_PER_100, TOT_MULTOOS, MULTOOS_PER_100, TOT_SINGOOS, SINGOOS_PER_100, SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WOFED, 
-         SCH_SAL_ADM_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, 
+         SCH_SAL_ADM_WOFED, SCH_NPE_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, 
          SPEND_PER_STUDENT_NPE_WOFED) %>%
   filter(SPEND_PER_STUDENT_SUP_WOFED < 1000000) # removing outlier of 2346486.911, leading me to believe that it was incorrect reporting
 
@@ -176,6 +177,96 @@ data_train <- rsample::training(data_split)
 data_test <- rsample::testing(data_split)
 
 ```
+
+```{r, include=FALSE}
+
+# summary data
+# number of states
+states <- table(disc_high_sum$LEA_STATE_NAME) %>%
+  as.data.frame() %>% #turning table() into a dataframe
+  as_tibble()
+
+# enrollment top 10
+enrollment <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_Enrollment = sum(TOT_ENR)) %>%
+  slice_max(State_Enrollment, n = 10) # selecting 10 states with the highest enrollment
+
+enrollmentgraph <- enrollment %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_Enrollment), y = State_Enrollment, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = 'none') +
+  labs(x = "State",
+       y = "Enrollment",
+       title = "10 States With Highest Enrollment")
+
+# top 10 ISS
+stateISS <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_ISS = sum(TOT_ISS)) %>%
+  slice_max(State_ISS, n = 10)
+
+stateISSgraph <- stateISS %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_ISS), y = State_ISS, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "ISS",
+       title = "10 States With Most ISS")
+
+# top 10 SINGOOS
+stateSINGOOS <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_SINGOOS = sum(TOT_SINGOOS)) %>%
+  slice_max(State_SINGOOS, n = 10)
+
+stateSINGOOSgraph <- stateSINGOOS %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_SINGOOS), y = State_SINGOOS, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Single OOS",
+       title = "10 States With Most Single OOS")
+
+# top 10 MULTOOS
+stateMULTOOS <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_MULTOOS = sum(TOT_MULTOOS)) %>%
+  slice_max(State_MULTOOS, n = 10)
+
+stateMULTOOSgraph <- stateMULTOOS %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_MULTOOS), y = State_MULTOOS, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Multiple OOS",
+       title = "10 States With Most Multi OOS")
+
+```
+
+```{r statesuspensions, fig.cap="Number of Suspensions in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
+
+sumgraphs <-
+  grid.arrange(enrollmentgraph, stateISSgraph, stateSINGOOSgraph, stateMULTOOSgraph,
+               ncol = 2)
+
+sumgraphs2 <- 
+  grid.arrange(stateSINGOOSgraph, stateMULTOOSgraph,
+               ncol = 2)
+
+```
+I created similar plots to interpret the relationship between enrollment and how much each state spends on personnel and non-personnel (Figure \@ref(fig:)). Akin to the previous graphs, a high number of students should yield a high spend yet this was not necessarily the case with many of these states. Predictably, both Texas and California had the highest number of enrolled students as well as the highest spend on personnel. Illinois  was unexpected as their spend on non-personnel far exceeded other states, even accounting for the fact that they have the third highest enrollment. Although Massachusetts is not included in the cohort of states with the highest enrollment, it does rank as one of the top spending states on personnel and non-personnel.
+
+Although these graphs do not give us information on how spend affects the number of instances of ISS and OOS, it does communicate how states vary in punishment and spend compared to the number enrolled. It also provides some understanding of how states differ in their characteristics based on the discrepancies between enrollment, discipline and spend.
+
 
 
 # Model
@@ -198,11 +289,11 @@ $Y$ is the number of ISS per 100 students, $X_{1}$ is the amount spent per stude
 
 The dependent variables are all calculated from the number of total suspensions and total enrollment at each school. ISS and OOS were chosen to better understand how financial resources and punishment interact with each other. I was interested in ISS and OOS particularly because they are seen as less punitive forms of punishment compared to expulsions. If they are seen as an alternative to expulsions, ISS and OOS could be used more frequently, even though there have been studies done which demonstrate that they still produce adverse consequences for those that are punished and those that go to high-suspending schools. Additionally, to narrow the scope of analysis, I also excluded instances of offenses, such as robbery and assault. As mentioned previously, I kept these variables qualitative and created a per 100 number as to not inflate schools which have high enrollment, and therefore, an increased number of suspensions.
 
-The independent variables focus on the amount spent per student, reflecting the financial resources a school possesses. While some schools may spend more or less than they have, it is at least some indication of their budget. There was the opportunity to use the number of personnel employed, but I wanted a financial representation of the data as well as a comparison between personnel and non-personnel expenditures. This observation would not be able to occur if the number of employed was used because there is no similar characterization of non-personnel. These were the only financial variables included in the raw data, although it would be interesting to see the overall spend of a school. Additionally, there were more data regarding the number of employees including security, nurses and psychologists, that would be an interesting analysis in the future, but was not discusses in the scope of this paper.
+The independent variables focus on the amount spent per student, reflecting the financial resources a school possesses. While some schools may spend more or less than they have, it is at least some indication of their budget. There was the opportunity to use the number of personnel employed, but I wanted a financial representation of the data as well as a comparison between personnel and non-personnel expenditures. This observation would not be able to occur if the number of employed was used because there is no similar characterization of non-personnel. These were the only financial variables included in the raw data, although it would be interesting to see the overall spend of a school. Additionally, there were more data regarding the number of employees including security, nurses and psychologists, that would be an interesting analysis in the future, but was not discussed in the scope of this paper.
 
 ## Validation
 
-In order to validate my model, I split my data into test and training sets and then calculated the Root Mean Squared Error (RMSE) using `Metrics` [@metrics]. Unfortunately, all models performed poorly. In the first model ($Y$ = ISS per 100 students), the RMSE was 9.38, which, for this type of data, is extremely large. It indicates that the prediction is off by 9 units, or, is off by 9 suspensions from the actual value. The fourth model representing the relationship between days missed due to OOS and amount spent on personnel and non-personnel is particularly inaccurate as it displays an error of 64.75.  Table \@ref(tab:rmse) displays RMSEs for the five multiple linear regressions, revealing inaccurate models. Moving forward, although the models are poorly performing, I will still explain the results shown and then present a discussion on why it is important and what can be done to get a more accurate understanding of the relationship between financial resources and punishment.
+In order to validate my model, I split my data into test and training sets using `tidymodels` [@tidymodels] and then calculated the Root Mean Squared Error (RMSE) using `Metrics` [@metrics]. Unfortunately, all models performed poorly. In the first model ($Y$ = ISS per 100 students), the RMSE was 9.38, which, for this type of data, is extremely large. It indicates that the prediction is off by 9 units, or, is off by 9 suspensions from the actual value. The fourth model representing the relationship between days missed due to OOS and amount spent on personnel and non-personnel is particularly inaccurate as it displays an error of 64.75.  Table \@ref(tab:rmse) displays RMSEs for the five multiple linear regressions, revealing further inaccurate models. Although the models are poorly performing, I will still explain the results shown and then present a discussion on why it is important and what can be done to get a more accurate understanding of the relationship between financial resources and punishment.
 
 ```{r, include=FALSE}
 
@@ -293,14 +384,14 @@ The model was run on four independent variables to explore if there is an associ
 
 ## ISS and OOS Results
 
-The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss),  a one dollar increase in spend per student on personnel $\beta_{1}$ is associated with a -0.00005 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Additionally, the $\beta_{0}$ states that if both salary of personnel and non-personnel were held at 0, there would be roughly 7.9 instances of ISS per 100 students. Interestingly, a one dollar increase in spend per student on non-personnel $\beta_{2}$ is associated with a 0.00001 increase in instances of ISS. Below Table \@ref(tab:lmiss) is the plotted data shown in Figure \@ref(fig:issplot) using `ggplot2` [@ggplot2] for graphs, `scales` [@scales] to prepare readable numbers and `kableExtra` [@kableExtra] to combine the graphs. It captures the amount spent per student on personnel without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. Additionally, Figure \@ref(fig:issnpe) presents the data on amount spent per student on non-personnel without federal funding on the x-axis and the number of ISS per 100 students on the y-axis.
+The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss),  a one dollar increase in spend per student on personnel $\beta_{1}$ is associated with a -0.00006 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Additionally, the $\beta_{0}$ states that if both salary of personnel and non-personnel were held at 0, there would be roughly 7.9 instances of ISS per 100 students. Interestingly, a one dollar increase in spend per student on non-personnel $\beta_{2}$ is associated with a 0.00002 increase in instances of ISS. Below Table \@ref(tab:lmiss) is the plotted data shown in Figure \@ref(fig:issplot) using `ggplot2` [@ggplot2] for graphs, `scales` [@scales] to prepare readable numbers and `kableExtra` [@kableExtra] to combine the graphs. It captures the amount spent per student on personnel without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. Additionally, Figure \@ref(fig:issnpe) presents the data on amount spent per student on non-personnel without federal funding on the x-axis and the number of ISS per 100 students on the y-axis.
 
 ```{r lmiss, echo=FALSE, warning=FALSE, message = FALSE}
 
-lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
-lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
-lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
-lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
 
 huxreg("ISS" = lmiss, number_format = 5, bold_signif = 0.05)
 
@@ -308,21 +399,23 @@ huxreg("ISS" = lmiss, number_format = 5, bold_signif = 0.05)
 
 ```{r, include=FALSE}
 
-issplot <- disc_high_sum %>%
+issplot <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
-  geom_point() +
-  scale_x_continuous(labels = comma) +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
+  scale_x_continuous(labels = comma) + # removes e+... numbering
   theme_minimal() +
   labs(x = "Spend per student WOFED",
        y = "ISS per 100 students",
        title = "ISS x Spend $0-250,000")
 
-issplotzoom <- disc_high_sum %>%
+issplotzoom <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
-  geom_point() +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
-  coord_cartesian(xlim = c(0, 50000))+
+  coord_cartesian(xlim = c(0, 50000))+ #zooms into an x-axis length without removing outliers from calculation
   labs(x = "Spend per student WOFED",
        y = "ISS per 100 students",
        title = "ISS x Spend $0-50,000")
@@ -340,18 +433,20 @@ issgraphs <-
 
 ```{r, include=FALSE}
 
-issnpe <- disc_high_sum %>%
+issnpe <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
-  geom_point() +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   labs(x = "Spend per student on NPE WOFED",
        y = "ISS per 100 students",
        title = "ISS NPE x Spend $0-1,000,000")
 
-issnpezoom <- disc_high_sum %>%
+issnpezoom <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
-  geom_point() +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000)) +
@@ -379,18 +474,20 @@ huxreg("SINGOOS" = lmsingoos, "MULTOOS" = lmmultoos, "DAYS MISSED" = lmdays, num
 
 ```{r, include=FALSE}
 
-daysmissedplot <- disc_high_sum %>%
+daysmissedplot <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
-  geom_point() +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   labs(x = "Spend per student WOFED",
        y = "Days missed per 100 students",
        title = "Days Missed x Spend $0-250,000")
 
-daysmissedplotzoom <- disc_high_sum %>%
+daysmissedplotzoom <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
-  geom_point() +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000)) +
@@ -410,18 +507,20 @@ daysgraphs <-
 
 ```{r, include=FALSE}
 
-daysnpe <- disc_high_sum %>%
+daysnpe <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
-  geom_point() +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   labs(x = "Spend per student on NPE WOFED",
        y = "Days missed due per 100 students",
        title = "Days Missed x Spend $0-1,000,000")
 
-daysnpezoom <- disc_high_sum %>%
+daysnpezoom <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
-  geom_point() +
+  geom_point(color = "#13304c") +
+  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000)) +
@@ -441,11 +540,11 @@ daysgraphs <-
 
 ## Salary Results
 
-Although the initial models produced inconclusive results, I wanted to investigate further into the relationship between different salary expenditures and instances of ISS. Following the same multiple linear regression model, I used ISS ($Y$) as the independent variable and the spend per student on teachers, instructional aid, support services staff and administration as the four dependent variables. The results in Table \@ref(tab:lmtype) indicate some relationship between ISS and salary spent on teachers and support services staff, although no association between ISS and salary spent on instructional aids and administration. When all salaries are held at \$0, there are 8.19 instances of ISS per 100 students. A dollar increase in amount spend per student on teachers $\beta_{1}$ produces a -0.00017 decrease in ISS per 100 students. Oddly, a one unit increase in amount spent per student on support services staff  $\beta_{3}$ causes an increase of 0.00007 in ISS per 100 students.
+Although the initial models produced inconclusive results, I wanted to investigate further into the relationship between different salary expenditures and instances of ISS. Following the same multiple linear regression model, I used ISS ($Y$) as the independent variable and the spend per student on teachers, instructional aid, support services staff and administration as the four dependent variables. The results in Table \@ref(tab:lmtype) indicate some relationship between ISS and salary spent on teachers and support services staff, although no association between ISS and salary spent on instructional aids and administration. When all salaries are held at \$0, there are 8.19 instances of ISS per 100 students. A dollar increase in amount spend per student on teachers $\beta_{1}$ produces a -0.00018 decrease in ISS per 100 students. Oddly, a one unit increase in amount spent per student on support services staff  $\beta_{3}$ causes an increase of 0.00009 in ISS per 100 students.
 
 ```{r lmtype, echo=FALSE, warning=FALSE, message = FALSE}
 
-lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = disc_high_sum)
+lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = data_train)
 
 huxreg("ISS" = lmtype, number_format = 5, bold_signif = 0.05)
 
@@ -488,7 +587,7 @@ Using multiple linear regression, the results revealed some relationship between
 
 There are several weaknesses of this study that should be discussed. First, school expenditures rely on funding which is directed by state laws, neighbourhood demographics and socioeconomic factors. By using expenditures, there are already a number of influencing variables between the different schools that make it difficult to find a causal relationship from the provided variables and models. State laws could greatly impact how much funding schools receive, as some states use a leveling feature that gives additional resources to underfunded schools. Secondly, the varying between states, neighbourhoods and schools could additionally add a number of confounding variables that cannot be separated. State political alignment could influence the population's perceptions on punishment. Neighbourhoods could be racially diverse or completely segregated which could similarly impact how discipline is administered, especially as racialized communities already experience higher policing and punishment. The variability between schools and their support or opposition toward severe discipline could also add to the source of high suspension rates.
 
-Thirdly, self-reporting makes it difficult to obtain accurate information. All numbers collected by the Civil Rights Data Collection are reported by the schools' administration. Schools may either underreport their numbers or not report them at all. If the data is incorrectly reported, it could produce misleading results even if all other assumptions of the model are true. Additionally, schools that were excluded from the model due to undisclosed information could impact the results by either influencing a rise or fall in school suspension rates. Unfortunately, lack of reporting would not be able to capture these numbers in the model.
+Thirdly, self-reporting makes it difficult to obtain accurate information. All numbers collected by the Civil Rights Data Collection are reported by the schools' administration. Schools may either underreport their numbers or not report them at all. If the data is incorrectly reported, it could produce misleading results even if all other assumptions of the model are true. Additionally, schools that were excluded from the model due to undisclosed information could impact the results by either influencing a rise or fall in school suspension rates. Unfortunately, lack of reporting would not be able to capture these numbers in the model therefore, the model may be deceptive or inconclusive.
 
 
 ## Causality
