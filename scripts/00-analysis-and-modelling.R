@@ -203,18 +203,78 @@ daysnpezoom <- disc_high_sum %>%
 
 daysnpe + daysnpezoom
 
-# modelling
-lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
-summary(lmiss)
+# test and training datasets
 
-lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+set.seed(853)
+
+data_split <- rsample::initial_split(disc_high_sum, prop = 0.80)
+
+data_train <- rsample::training(data_split)
+data_test <- rsample::testing(data_split)
+
+# modelling
+lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+
+lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
 summary(lmdays)
 
-lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
-lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
 
-lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = disc_high_sum)
+lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = data_train)
 summary(lmtype)
+
+# validation
+
+#iss
+iss_predictions <- lmiss %>%
+  predict(data_test)
+rmse(iss_predictions, sus_test$ISS_PER_100)
+
+#singoos
+singoos_predictions <- lmsingoos %>%
+  predict(data_test)
+rmse(singoos_predictions, sus_test$ISS_PER_100)
+
+#multioos
+multoos_predictions <- lmmultoos %>%
+  predict(data_test)
+rmse(multoos_predictions, sus_test$ISS_PER_100)
+
+#daysmissed
+days_predictions <- lmdays %>%
+  predict(data_test)
+rmse(days_predictions, sus_test$ISS_PER_100)
+
+trainissplot <- sus_train %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = 'y ~ x') +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-250,000")
+
+trainissplotzoom <- sus_train %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = 'y ~ x') +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000))+
+  labs(x = "Spend per student without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-50,000")
+
+trainissplot + trainissplotzoom
+
+# model performance
+
+performance::check_model(lmiss)
+performance::check_model(lmsingoos)
+performance::check_model(lmmultoos)
+performance::check_model(lmtype)
 
 # overall numbers for salary spend
 salary <- disc_high_sum %>%
@@ -379,4 +439,7 @@ test %>%
   geom_point() +
   geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
   scale_x_continuous(labels = comma)
+
+
+
 
