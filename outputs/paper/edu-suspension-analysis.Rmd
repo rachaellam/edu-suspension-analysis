@@ -80,7 +80,7 @@ In addition, schools that underreport or do not report data at all could severel
 
 ## Plots
 
-To initially better understand the data, I found the ten states with the highest number of enrollments and then plotted the total number of suspensions of those ten states (Figure \@tab(fig:statesuspensions)). In doing so, I compared the discrepancies between enrollment and suspensions as there should be a correlation between number enrolled and number of suspensions: those that have more numbers will more likely have more suspensions as well. Figure \@tab(fig:statesuspensions) presents mostly as we would expect - the ten states with the highest enrollment can be seen in nearly all graphs which plot the number of ISS and OSS. Texas has the highest number of students from grades 9 to 12; they also have the highest number of ISS and OSS. There are, however, a few differences. California is particularly interesting, with the second highest number of enrolled students yet the lowest number of ISS. Additionally, Georgia has the fifth highest enrollment yet the second highest number of ISS and the third highest number of both Single OOS and Multiple OOS. This roughly signifies that 10% of enrolled students in Georgia receive one instance of ISS.
+To initially better understand the data, I found the ten states with the highest number of enrollments and then plotted the total number of suspensions of those ten states (Figure \@tab(fig:statesuspensions))(Figure \@tab(fig:statesuspensions2)). In doing so, I compared the discrepancies between enrollment and suspensions as there should be a correlation between number enrolled and number of suspensions: those that have more numbers will more likely have more suspensions as well. Figure \@tab(fig:statesuspensions) and Figure \@tab(fig:statesuspensions2) present mostly as we would expect - the ten states with the highest enrollment can be seen in nearly all graphs which plot the number of ISS and OSS. Texas has the highest number of students from grades 9 to 12; they also have the highest number of ISS and OSS. There are, however, a few differences. California is particularly interesting, with the second highest number of enrolled students yet the lowest number of ISS. Additionally, Georgia has the fifth highest enrollment yet the second highest number of ISS and the third highest number of both Single OOS and Multiple OOS. This roughly signifies that 10% of enrolled students in Georgia receive one instance of ISS.
 
 
 ```{r, include=FALSE}
@@ -197,7 +197,8 @@ enrollmentgraph <- enrollment %>%
   geom_bar(stat = "identity") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), 
-        legend.position = 'none') +
+        legend.position = 'none',
+        text = element_text(size = 8)) +
   labs(x = "State",
        y = "Enrollment",
        title = "10 States With Highest Enrollment")
@@ -212,7 +213,9 @@ stateISSgraph <- stateISS %>%
   ggplot(aes(x = reorder(LEA_STATE_NAME, -State_ISS), y = State_ISS, fill = LEA_STATE_NAME)) +
   geom_bar(stat = "identity") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = 'none',
+        text = element_text(size = 8)) +
   scale_y_continuous(labels = comma) +
   labs(x = "State",
        y = "ISS",
@@ -228,7 +231,9 @@ stateSINGOOSgraph <- stateSINGOOS %>%
   ggplot(aes(x = reorder(LEA_STATE_NAME, -State_SINGOOS), y = State_SINGOOS, fill = LEA_STATE_NAME)) +
   geom_bar(stat = "identity") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = 'none',
+        text = element_text(size = 8)) +
   scale_y_continuous(labels = comma) +
   labs(x = "State",
        y = "Single OOS",
@@ -244,7 +249,9 @@ stateMULTOOSgraph <- stateMULTOOS %>%
   ggplot(aes(x = reorder(LEA_STATE_NAME, -State_MULTOOS), y = State_MULTOOS, fill = LEA_STATE_NAME)) +
   geom_bar(stat = "identity") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = 'none',
+        text = element_text(size = 8)) +
   scale_y_continuous(labels = comma) +
   labs(x = "State",
        y = "Multiple OOS",
@@ -252,18 +259,80 @@ stateMULTOOSgraph <- stateMULTOOS %>%
 
 ```
 
-```{r statesuspensions, fig.cap="Number of Suspensions in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
+```{r statesuspensions, fig.height=3, fig.cap="Number of Suspensions in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
 
 sumgraphs <-
-  grid.arrange(enrollmentgraph, stateISSgraph, stateSINGOOSgraph, stateMULTOOSgraph,
+  grid.arrange(enrollmentgraph, stateISSgraph,
                ncol = 2)
+
+```
+
+```{r statesuspensions2, fig.cap="Number of Suspensions in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
 
 sumgraphs2 <- 
   grid.arrange(stateSINGOOSgraph, stateMULTOOSgraph,
                ncol = 2)
 
 ```
-I created similar plots to interpret the relationship between enrollment and how much each state spends on personnel and non-personnel (Figure \@ref(fig:)). Akin to the previous graphs, a high number of students should yield a high spend yet this was not necessarily the case with many of these states. Predictably, both Texas and California had the highest number of enrolled students as well as the highest spend on personnel. Illinois  was unexpected as their spend on non-personnel far exceeded other states, even accounting for the fact that they have the third highest enrollment. Although Massachusetts is not included in the cohort of states with the highest enrollment, it does rank as one of the top spending states on personnel and non-personnel.
+
+
+I created similar plots to interpret the relationship between enrollment and how much each state spends on personnel and non-personnel (Figure \@ref(fig:statespend))(Figure \@ref(fig:statespend2)). Akin to the previous graphs, a high number of students should yield a high spend yet this was not necessarily the case with many of these states. Predictably, both Texas and California had the highest number of enrolled students as well as the highest spend on personnel. Illinois  was unexpected as their spend on non-personnel far exceeded other states, even accounting for the fact that they have the third highest enrollment. Although Massachusetts is not included in the cohort of states with the highest enrollment, it does rank as one of the top spending states on personnel and non-personnel.
+
+```{r, include=FALSE}
+
+# spend
+statespend <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(Personnel_Spend = sum(SCH_SAL_TOTPERS_WOFED)) %>%
+  slice_max(Personnel_Spend, n = 10)
+
+statenpespend <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(NPE_Spend = sum(SCH_NPE_WOFED)) %>%
+  slice_max(NPE_Spend, n = 10)
+
+statespendgraph <- statespend %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -Personnel_Spend), y = Personnel_Spend, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = 'none',
+        text = element_text(size = 8)) +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Spend on Personnel",
+       title = "10 States With Highest Personnel Spend")
+
+statenpespendgraph <- statenpespend %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -NPE_Spend), y = NPE_Spend, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = 'none',
+        text = element_text(size = 8)) +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Spend on Non-Personnel",
+       title = "10 States With Highest Non-Personnel Spend")
+
+```
+
+```{r statespend, fig.cap="Spend in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
+
+spendgraphs <-
+  grid.arrange(enrollmentgraph, statespendgraph,
+               ncol = 2)
+
+```
+
+```{r statespend2, fig.cap="Spend in 10 Most Populous Schools", echo=FALSE, warning=FALSE, message = FALSE}
+
+spendgraphs2 <-
+  grid.arrange(statenpespendgraph,
+               ncol = 2)
+
+```
+
 
 Although these graphs do not give us information on how spend affects the number of instances of ISS and OOS, it does communicate how states vary in punishment and spend compared to the number enrolled. It also provides some understanding of how states differ in their characteristics based on the discrepancies between enrollment, discipline and spend.
 

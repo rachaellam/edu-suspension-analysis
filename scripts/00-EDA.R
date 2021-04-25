@@ -209,7 +209,7 @@ disc_high_sum <- disc_high %>%
   transform(SINGOOS_PER_100 = round(((TOT_SINGOOS / TOT_ENR) * 100), digits = 2)) %>%
   select(LEA_STATE, LEA_STATE_NAME, LEAID, LEA_NAME, SCHID, SCH_NAME, SCH_NAME, COMBOKEY, TOT_ENR, TOT_DAYSMISSED, DAYSMISSED_PER_100, TOT_EXPWE, TOT_EXPWOE, TOT_ISS, 
          ISS_PER_100, TOT_MULTOOS, MULTOOS_PER_100, TOT_SINGOOS, SINGOOS_PER_100, SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WOFED, 
-         SCH_SAL_ADM_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, 
+         SCH_SAL_ADM_WOFED, SCH_NPE_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, 
          SPEND_PER_STUDENT_NPE_WOFED, SCH_FTE_TEACH_WOFED, TEACH_PER_STUDENT) %>%
   filter(SPEND_PER_STUDENT_SUP_WOFED < 1000000) # removing outlier of 2346486.911, leading me to believe that it was incorrect reporting
 
@@ -250,3 +250,126 @@ reg <- disc_high_sum %>%
          | LEA_STATE_NAME == "MAINE" | LEA_STATE_NAME == "RHODE ISLAND" | LEA_STATE_NAME == "MISSOURI" | LEA_STATE_NAME == "ILLINOIS" | LEA_STATE_NAME == "NEVADA"
          | LEA_STATE_NAME == "NEW HAMPSHIRE")
 
+
+# summary data
+# number of states
+states <- table(disc_high_sum$LEA_STATE_NAME) %>%
+  as.data.frame() %>% #turning table() into a dataframe
+  as_tibble()
+
+states %>%
+  kable(booktabs = T) %>%
+  kable_styling()
+
+states %>%
+  ggplot(aes(x = Var1, y = Freq, fill = Var1)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') + #remove legend
+  labs(x = "State",
+       y = "Count",
+       title = "Number of States in Dataset")
+#colour
+dd.col <- scale_fill_hue(length(states$Var1))
+
+# enrollment top 10
+enrollment <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_Enrollment = sum(TOT_ENR)) %>%
+  slice_max(State_Enrollment, n = 10) # selecting 10 states with the highest enrollment
+
+enrollmentgraph <- enrollment %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_Enrollment), y = State_Enrollment, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  labs(x = "State",
+       y = "Enrollment",
+       title = "10 States With Highest Enrollment")
+
+# top 10 ISS
+stateISS <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_ISS = sum(TOT_ISS)) %>%
+  slice_max(State_ISS, n = 10)
+
+stateISSgraph <- stateISS %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_ISS), y = State_ISS, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "ISS",
+       title = "10 States With Most ISS")
+
+# top 10 SINGOOS
+stateSINGOOS <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_SINGOOS = sum(TOT_SINGOOS)) %>%
+  slice_max(State_SINGOOS, n = 10)
+
+stateSINGOOSgraph <- stateSINGOOS %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_SINGOOS), y = State_SINGOOS, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Single OOS",
+       title = "10 States With Most Single OOS")
+
+# top 10 MULTOOS
+stateMULTOOS <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(State_MULTOOS = sum(TOT_MULTOOS)) %>%
+  slice_max(State_MULTOOS, n = 10)
+
+stateMULTOOSgraph <- stateMULTOOS %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -State_MULTOOS), y = State_MULTOOS, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Multiple OOS",
+       title = "10 States With Most Multi OOS")
+
+sumgraphs <-
+  grid.arrange(enrollmentgraph, stateISSgraph, stateSINGOOSgraph, stateMULTOOSgraph,
+               ncol = 1)
+
+# spend
+statespend <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(Personnel_Spend = sum(SCH_SAL_TOTPERS_WOFED)) %>%
+  slice_max(Personnel_Spend, n = 10)
+
+statenpespend <- disc_high_sum %>%
+  group_by(LEA_STATE_NAME) %>%
+  summarize(NPE_Spend = sum(SCH_NPE_WOFED)) %>%
+  slice_max(NPE_Spend, n = 10)
+
+statespendgraph <- statespend %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -Personnel_Spend), y = Personnel_Spend, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Spend on Personnel",
+       title = "10 States With Highest Personnel Spend")
+
+statenpespendgraph <- statenpespend %>%
+  ggplot(aes(x = reorder(LEA_STATE_NAME, -NPE_Spend), y = NPE_Spend, fill = LEA_STATE_NAME)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none') +
+  scale_y_continuous(labels = comma) +
+  labs(x = "State",
+       y = "Spend on Non-Personnel",
+       title = "10 States With Highest Non-Personnel Spend")
+
+spendgraphs <-
+  grid.arrange(enrollmentgraph, statespendgraph, statenpespendgraph,
+               ncol = 1)
