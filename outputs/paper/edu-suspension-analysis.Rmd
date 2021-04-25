@@ -196,7 +196,9 @@ $Y$ is the number of ISS per 100 students, $X_{1}$ is the amount spent per stude
 
 ## Features
 
+The dependent variables are all calculated from the number of total suspensions and total enrollment at each school. ISS and OOS were chosen to better understand how financial resources and punishment interact with each other. I was interested in ISS and OOS particularly because they are seen as less punitive forms of punishment compared to expulsions. If they are seen as an alternative to expulsions, ISS and OOS could be used more frequently, even though there have been studies done which demonstrate that they still produce adverse consequences for those that are punished and those that go to high-suspending schools. Additionally, to narrow the scope of analysis, I also excluded instances of offenses, such as robbery and assault. As mentioned previously, I kept these variables qualitative and created a per 100 number as to not inflate schools which have high enrollment, and therefore, an increased number of suspensions.
 
+The independent variables focus on the amount spent per student, reflecting the financial resources a school possesses. While some schools may spend more or less than they have, it is at least some indication of their budget. There was the opportunity to use the number of personnel employed, but I wanted a financial representation of the data as well as a comparison between personnel and non-personnel expenditures. This observation would not be able to occur if the number of employed was used because there is no similar characterization of non-personnel. These were the only financial variables included in the raw data, although it would be interesting to see the overall spend of a school. Additionally, there were more data regarding the number of employees including security, nurses and psychologists, that would be an interesting analysis in the future, but was not discusses in the scope of this paper.
 
 ## Validation
 
