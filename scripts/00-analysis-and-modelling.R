@@ -209,7 +209,6 @@ daysnpezoom <- disc_high_sum %>%
 daysnpe + daysnpezoom
 
 # test and training datasets
-
 set.seed(853)
 
 data_split <- rsample::initial_split(disc_high_sum, prop = 0.80)
@@ -218,38 +217,61 @@ data_train <- rsample::training(data_split)
 data_test <- rsample::testing(data_split)
 
 # modelling
-lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
 
-lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
-summary(lmdays)
+lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
 
-lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
-lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
 
-lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = data_train)
-summary(lmtype)
+lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
+
+lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = final)
 
 # validation
+vlmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train) #using train data for validation
+
+vlmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+summary(vlmdays)
+
+vlmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+vlmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+
+vlmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = data_train)
+summary(vlmtype)
 
 #iss
-iss_predictions <- lmiss %>%
+iss_predictions <- vlmiss %>%
   predict(data_test)
-rmse(iss_predictions, data_test$ISS_PER_100)
+iss_rmse <- rmse(iss_predictions, data_test$ISS_PER_100)
 
 #singoos
-singoos_predictions <- lmsingoos %>%
+singoos_predictions <- vlmsingoos %>%
   predict(data_test)
-rmse(singoos_predictions, data_test$ISS_PER_100)
+singoos_rmse <- rmse(singoos_predictions, data_test$SINGOOS_PER_100)
 
 #multioos
-multoos_predictions <- lmmultoos %>%
+multoos_predictions <- vlmmultoos %>%
   predict(data_test)
-rmse(multoos_predictions, data_test$ISS_PER_100)
+multoos_rmse <- rmse(multoos_predictions, data_test$MULTOOS_PER_100)
 
 #daysmissed
-days_predictions <- lmdays %>%
+days_predictions <- vlmdays %>%
   predict(data_test)
-rmse(days_predictions, data_test$ISS_PER_100)
+days_rmse <- rmse(days_predictions, data_test$DAYSMISSED_PER_100)
+
+#type
+type_predictions <- vlmtype %>%
+  predict(data_test)
+type_rmse <- rmse(type_predictions, data_test$ISS_PER_100)
+
+# creating tibble to put into kable later
+rmse_data <-
+  tibble(iss_rmse = iss_rmse,
+         singoos_rmse = singoos_rmse,
+         multoos_rmse = multoos_rmse,
+         days_rmse = days_rmse,
+         type_rmse = type_rmse)
+
 
 #graphing with training data
 trainissplot <- data_train %>%
@@ -276,7 +298,6 @@ trainissplotzoom <- data_train %>%
 trainissplot + trainissplotzoom
 
 # model performance
-
 performance::check_model(lmiss)
 performance::check_model(lmsingoos)
 performance::check_model(lmmultoos)
