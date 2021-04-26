@@ -52,7 +52,9 @@ library(Metrics)
 
 ## Disciplinary Inequality
 
-Zero tolerance policies that began as a mechanism to lower crime rates percolated into school policies and practices. In 1994, the Gun Free Schools Act compelled states who received federal funding to pass a state law that required local educational agencies to expel any student that was discovered to have brought a weapon to school. Although this act was intended to reduce violent crimes, it instead allowed schools to increase the use of out of school suspensions (OOS) for non-violent offenses such as "vulgar language, dress code violations, tardiness, or generic insubordination" [@baker-smith]. The negative consequences of these exclusionary practices, such as OOS and in school suspensions (ISS), have been well documented in numerous studies. Students who encounter disciplinary action are more likely to have lower academic achievements and higher involvement in the criminal justice system [@baker-smith]. One study found that instances of delinquency or crime only occurred after an OOS, validating the existence of the school-to-prison pipeline. Additionally, while ISS are seen as a less punitive form of punishment, students who received ISS had lower GPAs and higher dropout rates [@jabbari]. These negative repercussions do not only affect students who directly receive disciplinary sentences but also indirectly impact students who attend high-suspension rate schools [@hinze-pifera]. Suspensions can lead to an increase in fear of crime and teacher attrition [@hinze-pifera], which can all negatively affect the performance of students and staff.
+Zero tolerance policies that began as a mechanism to lower crime rates percolated into school policies and practices. In 1994, the Gun Free Schools Act compelled states who received federal funding to pass a state law that required local educational agencies to expel any student that was discovered to have brought a weapon to school. Although this act was intended to reduce violent crimes, it instead allowed schools to increase the use of out of school suspensions (OOS) for non-violent offenses such as "vulgar language, dress code violations, tardiness, or generic insubordination" [@baker-smith]. 
+
+The negative consequences of these exclusionary practices, such as OOS and in school suspensions (ISS), have been well documented in numerous studies. Students who encounter disciplinary action are more likely to have lower academic achievements and higher involvement in the criminal justice system [@baker-smith]. One study found that instances of delinquency or crime only occurred after an OOS, validating the existence of the school-to-prison pipeline. Additionally, while ISS are seen as a less punitive form of punishment, students who received ISS had lower GPAs and higher dropout rates [@jabbari]. These negative repercussions do not only affect students who directly receive disciplinary sentences but also indirectly impact students who attend high-suspension rate schools [@hinze-pifera]. Suspensions can lead to an increase in fear of crime and teacher attrition [@hinze-pifera], which can all negatively affect the performance of students and staff.
 
 Although OOS and ISS lead to a substantial number of disadvantageous impacts for all students, they disproportionately affect students of colour. Racial disparities in exclusionary punishments begin as early as preschool where black students experience more severe and frequent punishments [@skiba]. Black students are 3.5 times more likely to receive OOS than white students [@skiba] and in one randomized experiment, results indicated that teachers were more likely to punish a student who committed a second offense if they were black [@baker-smith]. This disciplinary inequality affects all students of colour, as Indigenous and Lantinx students share similar experiences. Race, gender, sexual orientation and disability all increase a student's chance of being subject to exclusionary practices [@skiba].
 
@@ -163,18 +165,13 @@ disc_high_sum <- disc_high %>%
   transform(SINGOOS_PER_100 = round(((TOT_SINGOOS / TOT_ENR) * 100), digits = 2)) %>%
   select(LEA_STATE, LEA_STATE_NAME, LEAID, LEA_NAME, SCHID, SCH_NAME, SCH_NAME, COMBOKEY, TOT_ENR, TOT_DAYSMISSED, DAYSMISSED_PER_100, TOT_EXPWE, TOT_EXPWOE, TOT_ISS, 
          ISS_PER_100, TOT_MULTOOS, MULTOOS_PER_100, TOT_SINGOOS, SINGOOS_PER_100, SCH_SAL_TOTPERS_WOFED, SCH_SAL_TEACH_WOFED, SCH_SAL_AID_WOFED, SCH_SAL_SUP_WOFED, 
-         SCH_SAL_ADM_WOFED, SCH_NPE_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, 
-         SPEND_PER_STUDENT_NPE_WOFED) %>%
+         SCH_SAL_ADM_WOFED, SCH_NPE_WOFED, SPEND_PER_STUDENT_WOFED, SPEND_PER_STUDENT_TEACH_WOFED, SPEND_PER_STUDENT_AID_WOFED, SPEND_PER_STUDENT_SUP_WOFED, SPEND_PER_STUDENT_ADM_WOFED, SPEND_PER_STUDENT_NPE_WOFED) %>%
   filter(SPEND_PER_STUDENT_SUP_WOFED < 1000000) # removing outlier of 2346486.911, leading me to believe that it was incorrect reporting
 
-# test and training datasets
-
-set.seed(853)
-
-data_split <- rsample::initial_split(disc_high_sum, prop = 0.80)
-
-data_train <- rsample::training(data_split)
-data_test <- rsample::testing(data_split)
+# removing high-leverage data points
+final <- disc_high_sum %>%
+  filter(SPEND_PER_STUDENT_WOFED < 100000) %>% # there are 4
+  filter(SPEND_PER_STUDENT_NPE_WOFED < 150000) # there are 7
 
 ```
 
@@ -336,8 +333,6 @@ spendgraphs2 <-
 
 Although these graphs do not give us information on how spend affects the number of instances of ISS and OOS, it does communicate how states vary in punishment and spend compared to the number enrolled. It also provides some understanding of how states differ in their characteristics based on the discrepancies between enrollment, discipline and spend.
 
-
-
 # Model
 
 ## Multiple Linear Regression
@@ -362,9 +357,18 @@ The independent variables focus on the amount spent per student, reflecting the 
 
 ## Validation
 
-In order to validate my model, I split my data into test and training sets using `tidymodels` [@tidymodels] and then calculated the Root Mean Squared Error (RMSE) using `Metrics` [@metrics]. Unfortunately, all models performed poorly. In the first model ($Y$ = ISS per 100 students), the RMSE was 9.38, which, for this type of data, is extremely large. It indicates that the prediction is off by 9 units, or, is off by 9 suspensions from the actual value. The fourth model representing the relationship between days missed due to OOS and amount spent on personnel and non-personnel is particularly inaccurate as it displays an error of 64.75.  Table \@ref(tab:rmse) displays RMSEs for the five multiple linear regressions, revealing further inaccurate models. Although the models are poorly performing, I will still explain the results shown and then present a discussion on why it is important and what can be done to get a more accurate understanding of the relationship between financial resources and punishment.
+In order to validate my model, I split my data into test and training sets using `tidymodels` [@tidymodels] and then calculated the Root Mean Squared Error (RMSE) using `Metrics` [@metrics]. Unfortunately, all models performed poorly. In the first model ($Y$ = ISS per 100 students), the RMSE was 9.51, which, for this type of data, is extremely large. It indicates that the prediction is off by almost 10 units, or, is off by 10 suspensions from the actual value. The fourth model representing the relationship between days missed due to OOS and amount spent on personnel and non-personnel is particularly inaccurate as it displays an error of 57.92.  Table \@ref(tab:rmse) displays RMSEs for the five multiple linear regressions, revealing further inaccurate models. Although the models are poorly performing, I will still explain the results shown and then present a discussion on why it is important and what can be done to get a more accurate understanding of the relationship between financial resources and punishment.
 
 ```{r, include=FALSE}
+
+# test and training datasets
+
+set.seed(853)
+
+data_split <- rsample::initial_split(final, prop = 0.80)
+
+data_train <- rsample::training(data_split)
+data_test <- rsample::testing(data_split)
 
 # validation
 lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
@@ -429,23 +433,25 @@ rmse_data %>%
 
 
 ## Threats to Validity
-To add:
 
-- How features enter the model and why
+One of the most compelling threats to validity for this particular model is the presence of high-leverage data points. In particular, there are four data points where the spend per student is about \$100,000 to \$200,000 above the rest of the 8055 observations. Additionally, there were seven high-leverage data points where the spend per student on non-personnel was between \$150 to \$750,000 above the other observations. By removing these data, there is a substantial difference in the model thus potentially misrepresenting the data and invalidating the entire fit. I decided to extract these four and seven data points as they were extremely high-leverage data points but in doing so, I have assumed that this data has been inaccurately reported and it will not be reflected in the model. There is the possibility that these are accurate numbers, thus deleting justifiable data. In Figure \@fig(tab:double), I have plotted the two lines of best fit as an example for ISS and spend per student on personnel, one with the outliers (red) and one without (blue). It is clear that these data points have drastically altered the data.
 
-- Alternative models or variants with strengths and weaknesses 
 
-- Circumstances in which the model may not be appropriate 
+```{r double, echo=FALSE, warning=FALSE, message = FALSE}
 
-- Model validation and checking (test/training?) 
+disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
+  geom_point(color = "#13304c") +
+  geom_abline(intercept = 7.87, slope = -0.00005, color = "#fa756b", size = 1) +
+  geom_abline(intercept = 8.17, slope = -0.00010, color = "#409fff", size = 1)+
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student WOFED",
+       y = "Number of ISS per 100 students",
+       title = "In School Suspensions x Spend")
 
-- Aspects discussed in data assert themselves 
+```
 
-- outliers or high leverage points
-
-- non-linearity of the data 
-
-- polynomial regression?
 
 # Results
 
@@ -453,22 +459,22 @@ The model was run on four independent variables to explore if there is an associ
 
 ## ISS and OOS Results
 
-The first model showed some relationship between instances of ISS and both $X_{1}$, spend per student on personnel, and $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), presented by `huxtable` [@huxtable],  a one dollar increase in spend per student on personnel $\beta_{1}$ is associated with a -0.00006 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Additionally, the $\beta_{0}$ states that if both salary of personnel and non-personnel were held at 0, there would be roughly 7.9 instances of ISS per 100 students. Interestingly, a one dollar increase in spend per student on non-personnel $\beta_{2}$ is associated with a 0.00002 increase in instances of ISS. Below Table \@ref(tab:lmiss) is the plotted data shown in Figure \@ref(fig:issplot) using `ggplot2` [@ggplot2] for graphs, `scales` [@scales] to prepare readable numbers and `kableExtra` [@kableExtra] to combine the graphs. It captures the amount spent per student on personnel without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Both plots represent the same data but the figure to the right is concentrated on the school spend between \$0 and \$50,000 to remove outliers and get a better understanding of the shape of the data. Additionally, Figure \@ref(fig:issnpe) presents the data on amount spent per student on non-personnel without federal funding on the x-axis and the number of ISS per 100 students on the y-axis.
+The first model showed some relationship between instances of ISS and $X_{1}$, spend per student on personnel, but not $X_{2}$, spend per student on non-personnel. To summarize the results shown in Table \@ref(tab:lmiss), presented by `huxtable` [@huxtable],  a one dollar increase in spend per student on personnel $\beta_{1}$ is associated with a -0.00011 decrease in instances of ISS controlling for all the other variables in the model. Although the decrease of the dependent variable seems ineffectual as it is so small, a one dollar increase is a comparatively small increase. Even so, a school would need an additional \$10,000 per student to increase the number of ISS by one. Additionally, the $\beta_{0}$ states that if both salary of personnel and non-personnel were held at 0, there would be roughly 8.17 instances of ISS per 100 students. For $\beta_{2}$, a one dollar increase in spend per student on non-personnel is associated with a 0.00004 decrease in instances of ISS, although as mentioned previously, there is a lack of association here. Below Table \@ref(tab:lmiss) is the plotted data shown in Figure \@ref(fig:issplot) using `scales` [@scales] to prepare readable numbers. It captures the amount spent per student on personnel without federal funding on the x-axis and the number of ISS per 100 students of the y-axis. Figure \@ref(fig:issnpe) presents the data on amount spent per student on non-personnel without federal funding on the x-axis and the number of ISS per 100 students on the y-axis.
 
 ```{r lmiss, echo=FALSE, warning=FALSE, message = FALSE}
 
-lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
-lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
-lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
-lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
+lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
+lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
+lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = final)
 
 huxreg("ISS" = lmiss, number_format = 5, bold_signif = 0.05)
 
 ```
 
-```{r, include=FALSE}
+```{r issplot, fig.cap="ISS and Spend on Personnel", echo=FALSE, warning=FALSE, message = FALSE}
 
-issplot <- data_train %>%
+final %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point(color = "#13304c") +
   geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
@@ -476,33 +482,14 @@ issplot <- data_train %>%
   theme_minimal() +
   labs(x = "Spend per student WOFED",
        y = "ISS per 100 students",
-       title = "ISS x Spend $0-250,000")
-
-issplotzoom <- data_train %>%
-  ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
-  geom_point(color = "#13304c") +
-  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
-  scale_x_continuous(labels = comma) +
-  theme_minimal() +
-  coord_cartesian(xlim = c(0, 50000))+ #zooms into an x-axis length without removing outliers from calculation
-  labs(x = "Spend per student WOFED",
-       y = "ISS per 100 students",
-       title = "ISS x Spend $0-50,000")
-
-```
-
-```{r issplot, fig.cap="ISS and Spend on Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
-
-issgraphs <-
-  grid.arrange(issplot, issplotzoom,
-               ncol = 1)
+       title = "ISS x Spend")
 
 ```
 
 
-```{r, include=FALSE}
+```{r issnpe, fig.cap="ISS and Spend on Non-Personnel", echo=FALSE, warning=FALSE, message = FALSE}
 
-issnpe <- data_train %>%
+final %>%
   ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
   geom_point(color = "#13304c") +
   geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
@@ -510,30 +497,11 @@ issnpe <- data_train %>%
   theme_minimal() +
   labs(x = "Spend per student on NPE WOFED",
        y = "ISS per 100 students",
-       title = "ISS NPE x Spend $0-1,000,000")
-
-issnpezoom <- data_train %>%
-  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
-  geom_point(color = "#13304c") +
-  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
-  scale_x_continuous(labels = comma) +
-  theme_minimal() +
-  coord_cartesian(xlim = c(0, 50000)) +
-  labs(x = "Spend per student on NPE WOFED",
-       y = "ISS per 100 students",
-       title = "ISS NPE x Spend $0-50,000")
+       title = "ISS NPE x Spend")
 
 ```
 
-```{r issnpe, fig.cap="ISS and Spend on Non-Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
-
-issnpegraphs <-
-  grid.arrange(issnpe, issnpezoom,
-               ncol = 1)
-
-```
-
-Both the second and third model (Table \@ref(tab:lmiss2)) reveal no association between instances in single OOS and multiple OOS, respectively, and spend per student on personnel ($X_{1}$) and non-personnel ($X_{2}$). These models only explain that the data is not unusual under this model, rather than proof of a decisive causal relationship. Finally, model four displays some association between number of days missed due to OOS and spend per student on personnel, but no association with spend per student on non-personnel. A one dollar increase in spend per student on personnel $\beta_{1}$, leads to a -0.00033 decrease in the number of days missed due to OOS. These results are seemingly contradictory, as I would assume if we were to see an association between days missed due to OOS and spend, we would also see some sort of association between the number of single and multiple OOS. An increase in OOS should correspondingly lead to an increase in days missed. Additionally, in model 4, $\beta_{0}$ shows that if the sum of spend for both personnel and non-personnel salaries were fixed at 0, there would be 38.24 days missed per 100 students. Figure \@ref(fig:daysplot) displays the data of model four, using similar tactics to Figure \@ref(fig:issplot), with the amount spent per student on personnel without federal funding on the x-axis and the number of days missed due to OOS per 100 students of the y-axis. Additionally, Figure \@ref(fig:daysnpe) plots the amount spent per student on non-personnel without federal funding on the x-axis and the number of days missed due to OOS per 100 students on the y-axis. Unfortunately, in all models, the residual standard percentage error is well over 100%, signifying a poor model fit for the data. As a result, the model leads to inconclusive results and it is indeterminable whether or not school spend has any affect on the number of ISS and OSS with the data provided. 
+Both the second and third model (Table \@ref(tab:lmiss2)) reveal no association between instances in single OOS and multiple OOS, respectively, and spend per student on personnel ($\beta_{1}$), however, there is some association between single OOS and spend per student on non-personnel ($\beta_{2}$). A one dollar increase in spend on non-personnel is associated with a -0.00005 decrease in single OOS. Although there is the presense of a p-value less than 0.01, these models only explain that the data is not unusual under this model, rather than proof of a decisive causal relationship. Finally, model four displays some association between number of days missed due to OOS and spend per student on personnel and spend per student on non-personnel. A one dollar increase in spend per student on personnel $\beta_{1}$ leads to a -0.00046 decrease in the number of days missed due to OOS while a one dollar increase in spend per student on non-personnel $\beta_{2}$ produces a -0.00105 decrease in the number of days missed. Additionally, in model 4, $\beta_{0}$ shows that if the sum of spend for both personnel and non-personnel salaries were fixed at 0, there would be 40.16 days missed per 100 students. Figure \@ref(fig:daysplot) displays the data of model four, using similar tactics to Figure \@ref(fig:issplot), with the amount spent per student on personnel without federal funding on the x-axis and the number of days missed due to OOS per 100 students of the y-axis. Additionally, Figure \@ref(fig:daysnpe) plots the amount spent per student on non-personnel without federal funding on the x-axis and the number of days missed due to OOS per 100 students on the y-axis. Unfortunately, in all models, the residual standard percentage error is well over 100%, signifying a poor model fit for the data. As a result, the model leads to inconclusive results and it is indeterminable whether or not school spend has any affect on the number of ISS and OSS with the data provided.
 
 ```{r lmiss2, echo=FALSE, warning=FALSE, message = FALSE, fig.width=8, fig.height=6}
 
@@ -541,9 +509,9 @@ huxreg("SINGOOS" = lmsingoos, "MULTOOS" = lmmultoos, "DAYS MISSED" = lmdays, num
 
 ```
 
-```{r, include=FALSE}
+```{r daysplot, fig.cap="Days Missed and Spend on Personnel", echo=FALSE, warning=FALSE, message = FALSE}
 
-daysmissedplot <- data_train %>%
+final %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
   geom_point(color = "#13304c") +
   geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
@@ -551,69 +519,33 @@ daysmissedplot <- data_train %>%
   theme_minimal() +
   labs(x = "Spend per student WOFED",
        y = "Days missed per 100 students",
-       title = "Days Missed x Spend $0-250,000")
-
-daysmissedplotzoom <- data_train %>%
-  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
-  geom_point(color = "#13304c") +
-  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
-  scale_x_continuous(labels = comma) +
-  theme_minimal() +
-  coord_cartesian(xlim = c(0, 50000)) +
-  labs(x = "Spend per student WOFED",
-       y = "Days missed per 100 students",
-       title = "Days Missed x Spend $0-250,000")
+       title = "Days Missed x Spend")
 
 ```
 
-```{r daysplot, fig.cap="Days Missed and Spend on Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
 
-daysgraphs <-
-  grid.arrange(daysmissedplot, daysmissedplotzoom,
-               ncol = 1)
+```{r daysnpe, fig.cap="Days Missed and Spend on Non-Personnel", echo=FALSE, warning=FALSE, message = FALSE}
 
-```
-
-```{r, include=FALSE}
-
-daysnpe <- data_train %>%
+final %>%
   ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
   geom_point(color = "#13304c") +
   geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   labs(x = "Spend per student on NPE WOFED",
-       y = "Days missed due per 100 students",
-       title = "Days Missed x Spend $0-1,000,000")
-
-daysnpezoom <- data_train %>%
-  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
-  geom_point(color = "#13304c") +
-  geom_smooth(method = "lm", formula = 'y ~ x', color = "#409fff") +
-  scale_x_continuous(labels = comma) +
-  theme_minimal() +
-  coord_cartesian(xlim = c(0, 50000)) +
-  labs(x = "Spend per student on NPE WOFED",
        y = "Days missed per 100 students",
-       title = "Days Missed x Spend $0-50,000")
+       title = "Days Missed x Spend on NPE")
 
 ```
 
-```{r daysnpe, fig.cap="Days Missed and Spend on Non-Personnel, Zoomed for Detail", echo=FALSE, warning=FALSE, message = FALSE}
-
-daysgraphs <-
-  grid.arrange(daysnpe, daysnpezoom,
-               ncol = 1)
-
-```
 
 ## Salary Results
 
-Although the initial models produced inconclusive results, I wanted to investigate further into the relationship between different salary expenditures and instances of ISS. Following the same multiple linear regression model, I used ISS ($Y$) as the independent variable and the spend per student on teachers, instructional aid, support services staff and administration as the four dependent variables. The results in Table \@ref(tab:lmtype) indicate some relationship between ISS and salary spent on teachers and support services staff, although no association between ISS and salary spent on instructional aids and administration. When all salaries are held at \$0, there are 8.19 instances of ISS per 100 students. A dollar increase in amount spend per student on teachers $\beta_{1}$ produces a -0.00018 decrease in ISS per 100 students. Oddly, a one unit increase in amount spent per student on support services staff  $\beta_{3}$ causes an increase of 0.00009 in ISS per 100 students.
+Although the initial models produced inconclusive results, I wanted to investigate further into the relationship between different salary expenditures and instances of ISS. Following the same multiple linear regression model, I used ISS ($Y$) as the independent variable and the spend per student on teachers, instructional aid, support services staff and administration as the four dependent variables. The results in Table \@ref(tab:lmtype) indicate some relationship between ISS and salary spent on teachers and support services staff, although no association between ISS and salary spent on instructional aids and administration. When all salaries are held at \$0, there are 8.56 instances of ISS per 100 students. A dollar increase in amount spend per student on teachers $\beta_{1}$ produces a -0.00027 decrease in ISS per 100 students. Oddly, a one unit increase in amount spent per student on support services staff  $\beta_{3}$ causes an increase of 0.00007 in ISS per 100 students.
 
 ```{r lmtype, echo=FALSE, warning=FALSE, message = FALSE}
 
-lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = data_train)
+lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = final)
 
 huxreg("ISS" = lmtype, number_format = 5, bold_signif = 0.05)
 
@@ -650,7 +582,7 @@ salary %>%
 
 Numerous studies have documented the adverse consequences of ISS and OOS. Extreme disciplinary action has been used for not only violent offenses but also minor infractions, which reduce the educational opportunities for students and the subsequent reduction of economic mobility. Although these studies name several factors influences the number of disciplinary actions such as socioeconomic background, ethnicity and attitude toward punishment, this study focuses on the impact of spend on the number of instances of ISS and OOS. Although it is well known that schools are continuously underfunded, getting a better understanding of this insufficient funding on disciplinary action is crucial for endorsing the dire need for more investment. Funding of schools relies on the majority of state and local funding. Local funding is collected from property taxes and other taxes such as sales and income. This automatically leads to a discrepancy as low-income communities collect less property tax from low-priced housing and less sales and income tax from fewer overall purchases. Very few states attempt to equalize school funding, and even in states that do, there is still a large discrepancy with the amount of resources schools receive. A study that can undeniably attest to the negative consequences of aggressive punishment as a result of economic deficiencies can begin to facilitate conversations around strategies and approaches to gaining additional funding for the younger generation. Fair, reliable and quality education can result in a better standard of living for everyone and should be a priority for the future. 
 
-Using multiple linear regression, the results revealed some relationship between spend on personnel and non-personnel in instances of ISS and number of days missed. Additionally, there was no association found between spend on personnel and non-personnel in instances of single OOS and multiple OOS. Despite this relationship and non-relationship, results are not sufficient and causality cannot be determined as linear regression does not establish causal inference, only that there is an association to a degree. I would still argue that the presence of a connection should lead to further investigation and an alternate study that I have outlined in a couple sections below. 
+Using multiple linear regression, the results revealed some relationship between spend on personnel in instances of ISS and number of days missed. Additionally, there was no association found between spend on personnel in instances of single OOS and multiple OOS, yet some association between spend on non-personnel and instances of single OOS. Despite this relationship and non-relationship, results are not sufficient and causality cannot be determined as linear regression does not establish causal inference, only that there is an association to a degree. I would still argue that the presence of a connection should lead to further investigation and an alternate study that I have outlined in a couple sections below. 
 
 ## Weaknesses
 
