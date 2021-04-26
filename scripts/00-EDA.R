@@ -16,6 +16,10 @@
 # install.packages("performance")
 # install.packages("see")
 # install.packages("broom")
+# install.packages("reshape2")
+# install.packages("knitr)
+# install.packages("palmerpenguins")
+# install.packages("patchwork")
 
 library(here)
 library(devtools)
@@ -26,6 +30,10 @@ library(scales)
 library(performance)
 library(see)
 library(broom)
+library(reshape2)
+library(knitr)
+library(palmerpenguins)
+library(patchwork)
 
 ### Load Dataset ###
 raw_data <- read.csv("inputs/data/CRDC-2015-16-School-Data.csv")
@@ -373,3 +381,91 @@ statenpespendgraph <- statenpespend %>%
 spendgraphs <-
   grid.arrange(enrollmentgraph, statespendgraph, statenpespendgraph,
                ncol = 1)
+
+# initial graphing
+
+issplot <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = 'y ~ x') +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-250,000")
+
+issplotzoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = 'y ~ x') +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000))+
+  labs(x = "Spend per student without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-50,000")
+
+issplot + issplotzoom
+
+issnpe <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-1,000,000")
+
+issnpezoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, ISS_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 10000)) +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of in school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-10,000")
+
+issnpe + issnpezoom
+
+daysmissedplot <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-250,000")
+
+daysmissedplotzoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000)) +
+  labs(x = "Spend per student without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-250,000")
+
+daysmissedplot + daysmissedplotzoom
+
+daysnpe <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_NPE_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-1,000,000")
+
+daysnpezoom <- disc_high_sum %>%
+  ggplot(aes(SPEND_PER_STUDENT_WOFED, DAYSMISSED_PER_100)) +
+  geom_point() +
+  scale_x_continuous(labels = comma) +
+  theme_minimal() +
+  coord_cartesian(xlim = c(0, 50000)) +
+  labs(x = "Spend per student on non-personnel (NPE) without federal funding",
+       y = "Number of days missed due to out of school suspensions per 100 students",
+       title = "In School Suspensions x Spend $0-50,000")
+
+daysnpe + daysnpezoom
