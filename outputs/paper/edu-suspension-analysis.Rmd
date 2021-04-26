@@ -1,5 +1,5 @@
 ---
-title: "Public School Expenditures and Suspensions"
+title: "Public School Expenditures are Associated with Suspensions"
 author: "Rachael Lam"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 header-includes:
@@ -362,7 +362,6 @@ In order to validate my model, I split my data into test and training sets using
 ```{r, include=FALSE}
 
 # test and training datasets
-
 set.seed(853)
 
 data_split <- rsample::initial_split(final, prop = 0.80)
@@ -371,39 +370,39 @@ data_train <- rsample::training(data_split)
 data_test <- rsample::testing(data_split)
 
 # validation
-lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+vlmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
 
-lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
-summary(lmdays)
+vlmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+summary(vlmdays)
 
-lmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
-lmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+vlmsingoos <- lm(SINGOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+vlmmultoos <- lm(MULTOOS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
 
-lmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = data_train)
-summary(lmtype)
+vlmtype <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_TEACH_WOFED + SPEND_PER_STUDENT_AID_WOFED + SPEND_PER_STUDENT_SUP_WOFED + SPEND_PER_STUDENT_ADM_WOFED, data = data_train)
+summary(vlmtype)
 
 #iss
-iss_predictions <- lmiss %>%
+iss_predictions <- vlmiss %>%
   predict(data_test)
 iss_rmse <- rmse(iss_predictions, data_test$ISS_PER_100)
 
 #singoos
-singoos_predictions <- lmsingoos %>%
+singoos_predictions <- vlmsingoos %>%
   predict(data_test)
 singoos_rmse <- rmse(singoos_predictions, data_test$SINGOOS_PER_100)
 
 #multioos
-multoos_predictions <- lmmultoos %>%
+multoos_predictions <- vlmmultoos %>%
   predict(data_test)
 multoos_rmse <- rmse(multoos_predictions, data_test$MULTOOS_PER_100)
 
 #daysmissed
-days_predictions <- lmdays %>%
+days_predictions <- vlmdays %>%
   predict(data_test)
 days_rmse <- rmse(days_predictions, data_test$DAYSMISSED_PER_100)
 
 #type
-type_predictions <- lmtype %>%
+type_predictions <- vlmtype %>%
   predict(data_test)
 type_rmse <- rmse(type_predictions, data_test$ISS_PER_100)
 
