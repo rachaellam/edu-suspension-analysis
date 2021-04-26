@@ -6,7 +6,7 @@ For decades, not only have exclusionary punishment practices forcibly removed ch
 # Data
 Raw data can be found here: https://www.datalumos.org/datalumos/project/103004/version/V1/view;jsessionid=8B19F77635B6CB11BE66A6B2292453D5
 
-In order to run the 00-analysis-and-modelling R script with no changes, download the dataset and save it in the project folder as "inputs/data/CRDC-2015-16-School-Data.csv"
+In order to run both the 00-EDA and 00-analysis-and-modelling R script with no changes, download the dataset and save it in the project folder as "inputs/data/CRDC-2015-16-School-Data.csv"
 
 # File Structure
 'Inputs' are everything that will not be edited, whcih includes raw data and references. 'Outputs' are everything that will be created and further modified, which includes the r markdown and the paper.
