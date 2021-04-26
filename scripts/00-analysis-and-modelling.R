@@ -1,5 +1,5 @@
 ### Preamble ###
-# Purpose: EDA of Department of Education Data
+# Purpose: Analysis and Modelling of Department of Education Data
 # Author: Rachael Lam
 # Date: March 10 2021
 # Contact: rachael.lam@mail.utoronto.ca
@@ -115,12 +115,17 @@ disc_high_sum <- disc_high %>%
          SPEND_PER_STUDENT_NPE_WOFED) %>%
   filter(SPEND_PER_STUDENT_SUP_WOFED < 1000000) # removing outlier of 2346486.911, leading me to believe that it was incorrect reporting
 
+# removing high-leverage data points
+final <- disc_high_sum %>%
+  filter(SPEND_PER_STUDENT_WOFED < 100000) %>% # there are 4
+  filter(SPEND_PER_STUDENT_NPE_WOFED < 150000) # there are 7
+
 # initial graphing
 
 issplot <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed", formula = 'y ~ x') +
+  geom_smooth(method = "lm", formula = 'y ~ x') +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   labs(x = "Spend per student without federal funding",
@@ -130,7 +135,7 @@ issplot <- disc_high_sum %>%
 issplotzoom <- disc_high_sum %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed", formula = 'y ~ x') +
+  geom_smooth(method = "lm", formula = 'y ~ x') +
   scale_x_continuous(labels = comma) +
   theme_minimal() +
   coord_cartesian(xlim = c(0, 50000))+
@@ -213,7 +218,7 @@ data_train <- rsample::training(data_split)
 data_test <- rsample::testing(data_split)
 
 # modelling
-lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
+lmiss <- lm(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
 
 lmdays <- lm(DAYSMISSED_PER_100 ~ SPEND_PER_STUDENT_WOFED + SPEND_PER_STUDENT_NPE_WOFED, data = data_train)
 summary(lmdays)
@@ -229,24 +234,25 @@ summary(lmtype)
 #iss
 iss_predictions <- lmiss %>%
   predict(data_test)
-rmse(iss_predictions, sus_test$ISS_PER_100)
+rmse(iss_predictions, data_test$ISS_PER_100)
 
 #singoos
 singoos_predictions <- lmsingoos %>%
   predict(data_test)
-rmse(singoos_predictions, sus_test$ISS_PER_100)
+rmse(singoos_predictions, data_test$ISS_PER_100)
 
 #multioos
 multoos_predictions <- lmmultoos %>%
   predict(data_test)
-rmse(multoos_predictions, sus_test$ISS_PER_100)
+rmse(multoos_predictions, data_test$ISS_PER_100)
 
 #daysmissed
 days_predictions <- lmdays %>%
   predict(data_test)
-rmse(days_predictions, sus_test$ISS_PER_100)
+rmse(days_predictions, data_test$ISS_PER_100)
 
-trainissplot <- sus_train %>%
+#graphing with training data
+trainissplot <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
   geom_smooth(method = "lm", formula = 'y ~ x') +
@@ -256,7 +262,7 @@ trainissplot <- sus_train %>%
        y = "Number of in school suspensions per 100 students",
        title = "In School Suspensions x Spend $0-250,000")
 
-trainissplotzoom <- sus_train %>%
+trainissplotzoom <- data_train %>%
   ggplot(aes(SPEND_PER_STUDENT_WOFED, ISS_PER_100)) +
   geom_point() +
   geom_smooth(method = "lm", formula = 'y ~ x') +
@@ -429,7 +435,7 @@ summary(lmdemdays)
 test <- disc_high_sum %>%
   filter(SPEND_PER_STUDENT_WOFED < 20000)
 
-testfit <- test %>%
+testfit <- disc_high_sum %>%
   lm(formula = ISS_PER_100 ~ poly(SPEND_PER_STUDENT_WOFED, 2, raw = TRUE))
 
 summary(testfit)
@@ -439,6 +445,12 @@ test %>%
   geom_point() +
   geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
   scale_x_continuous(labels = comma)
+
+testfit <- lm(ISS_PER_100 ~ poly(SPEND_PER_STUDENT_WOFED, 2) + SPEND_PER_STUDENT_NPE_WOFED, data = disc_high_sum)
+summary(testfit)
+
+plot(ISS_PER_100 ~ SPEND_PER_STUDENT_WOFED, disc_high_sum)
+lines(disc_high_sum$SPEND_PER_STUDENT_WOFED, predict(testfit), col = 'red')
 
 
 
