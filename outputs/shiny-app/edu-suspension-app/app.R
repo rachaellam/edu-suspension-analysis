@@ -10,7 +10,7 @@
 # install.packages("tidyverse")
 # install.packages("devtools")
 # install.packages("dplyr")
-# install.packages("reshape2") #to reshape data later down
+# install.packages("scales")
 # install.packages("ggplot2")
 # install.packages("here")
 # install.packages("shiny")
@@ -18,9 +18,9 @@
 library(tidyverse)
 library(devtools)
 library(dplyr)
-library(reshape2)
 library(ggplot2)
 library(here)
+library(scales)
 library(shiny)
 
 
@@ -145,7 +145,8 @@ server <- function(input, output) {
                   legend.position = 'none',
                   text = element_text(size = 8)) +
             labs(x = "State",
-                 y = "Enrollment")
+                 y = "Enrollment") +
+            scale_y_continuous(labels = comma)
         })
 }
 # Run the application 
