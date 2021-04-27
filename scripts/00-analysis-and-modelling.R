@@ -115,10 +115,16 @@ disc_high_sum <- disc_high %>%
          SPEND_PER_STUDENT_NPE_WOFED) %>%
   filter(SPEND_PER_STUDENT_SUP_WOFED < 1000000) # removing outlier of 2346486.911, leading me to believe that it was incorrect reporting
 
+# saving disc_high_sum
+write_csv(disc_high_sum, "inputs/data/disc_high_sum.csv")
+
 # removing high-leverage data points
 final <- disc_high_sum %>%
   filter(SPEND_PER_STUDENT_WOFED < 100000) %>% # there are 4
   filter(SPEND_PER_STUDENT_NPE_WOFED < 150000) # there are 7
+
+# saving final
+write_csv(final, "inputs/data/final.csv")
 
 # initial graphing
 
