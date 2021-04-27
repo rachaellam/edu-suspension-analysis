@@ -125,7 +125,7 @@ ui <- fluidPage(
                         max = 1250000,
                         value = 10000),
             hr(),
-            helpText("Graph is filled by the number of ISS. The lighter the colour, the higher the number of in school suspensions.")
+            helpText("Graph is filled and ordered by the number of ISS. The lighter the colour, the higher the number of in school suspensions.")
         ),
         # Show a plot of the generated distribution
         mainPanel(
