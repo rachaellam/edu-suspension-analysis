@@ -144,8 +144,8 @@ server <- function(input, output) {
             theme(axis.text.x = element_text(angle = 45, hjust = 1), 
                   legend.position = 'none',
                   text = element_text(size = 8)) +
-            labs(x = "Enrollment",
-                 y = "State")
+            labs(x = "State",
+                 y = "Enrollment")
         })
 }
 # Run the application 
