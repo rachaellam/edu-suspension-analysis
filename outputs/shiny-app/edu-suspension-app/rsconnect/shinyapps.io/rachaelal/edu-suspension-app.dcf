@@ -1,0 +1,12 @@
+name: edu-suspension-app
+title: edu-suspension-app
+username:
+account: rachaelal
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4038771
+bundleId: 4525376
+url: https://rachaelal.shinyapps.io/edu-suspension-app/
+when: 1619532406.16355
+asMultiple: FALSE
+asStatic: FALSE
