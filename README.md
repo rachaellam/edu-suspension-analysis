@@ -9,4 +9,4 @@ Raw data can be found here: https://www.datalumos.org/datalumos/project/103004/v
 In order to run both the 00-EDA and 00-analysis-and-modelling R script with no changes, download the dataset and save it in the project folder as "inputs/data/CRDC-2015-16-School-Data.csv"
 
 # File Structure
-'Inputs' are everything that will not be edited, whcih includes raw data and references. 'Outputs' are everything that will be created and further modified, which includes the r markdown and the paper.
+'Inputs' are everything that will not be edited, which includes raw data and references. 'Outputs' are everything that will be created and further modified, which includes the r markdown and the paper.
